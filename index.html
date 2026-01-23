@@ -27,11 +27,7 @@
     margin-bottom: 16px;
   }
 
-  label {
-    font-size: 14px;
-    display: block;
-    margin-top: 12px;
-  }
+  label { font-size: 14px; margin-top: 12px; display: block; }
 
   input {
     width: 100%;
@@ -54,12 +50,12 @@
     color: #022c22;
   }
 
-  /* ===== SUMMARY ===== */
+  /* SUMMARY */
   .summary-title {
     text-align: center;
     font-weight: bold;
-    letter-spacing: 1px;
     margin-bottom: 12px;
+    letter-spacing: 1px;
   }
 
   .summary-grid {
@@ -88,12 +84,10 @@
     .summary-grid { grid-template-columns: 1fr 1fr; }
   }
 
-  /* ===== CHART ===== */
-  .chart-wrapper {
-    margin-top: 20px;
-  }
+  /* CHART */
+  .chart-wrapper { margin-top: 20px; }
 
-  /* ===== TABLE ===== */
+  /* TABLE */
   .table-wrapper {
     margin-top: 20px;
     overflow-x: auto;
@@ -101,7 +95,7 @@
 
   table {
     width: 100%;
-    min-width: 600px;
+    min-width: 700px;
     border-collapse: collapse;
     font-size: 13px;
   }
@@ -131,6 +125,9 @@
   <label>Profit per Trade (% dari posisi)</label>
   <input id="profitPercent" type="number" value="50">
 
+  <label>Leverage (x)</label>
+  <input id="leverage" type="number" value="200">
+
   <label>Fee Beli (%)</label>
   <input id="feeBuy" type="number" value="0.04">
 
@@ -152,24 +149,26 @@
 let equityChart = null;
 
 function calculate() {
-  const modalAwal = parseFloat(modal.value);
+  const modalAwal = Number(modal.value);
   let modalNow = modalAwal;
 
   const posPct = posPercent.value / 100;
   const profitPct = profitPercent.value / 100;
-  const feeRound = (Number(feeBuy.value) + Number(feeSell.value) + Number(fundingFee.value)) / 100;
+  const leverageVal = Number(leverage.value);
+  const feeRate = (Number(feeBuy.value) + Number(feeSell.value) + Number(fundingFee.value)) / 100;
   const trades = Number(loops.value);
 
   let totalProfit = 0;
-  let rows = "";
+  let rows = [];
   let equity = [modalAwal];
   let labels = ["0"];
 
   for (let i = 1; i <= trades; i++) {
     const modalBefore = modalNow;
-    const posisi = modalBefore * posPct;
-    const grossProfit = posisi * profitPct;
-    const fee = posisi * feeRound;
+    const posisi = modalBefore * posPct;          // margin
+    const notional = posisi * leverageVal;        // actual position
+    const grossProfit = posisi * profitPct;       // profit from margin
+    const fee = notional * feeRate;               // fee from notional
     const netProfit = grossProfit - fee;
 
     modalNow += netProfit;
@@ -178,15 +177,16 @@ function calculate() {
     equity.push(modalNow);
     labels.push(i.toString());
 
-    rows += `
+    rows.push(`
       <tr>
         <td>${i}</td>
         <td>${modalBefore.toFixed(2)}</td>
         <td>${posisi.toFixed(2)}</td>
+        <td>${leverageVal}x</td>
         <td>${netProfit.toFixed(2)}</td>
         <td>${fee.toFixed(4)}</td>
         <td>${modalNow.toFixed(2)}</td>
-      </tr>`;
+      </tr>`);
   }
 
   const roi = (totalProfit / modalAwal) * 100;
@@ -201,7 +201,8 @@ function calculate() {
         <div class="summary-row"><span>Modal awal</span><span>$${modalAwal.toFixed(2)}</span></div>
         <div class="summary-row"><span>Posisi per trade</span><span>${(posPct*100).toFixed(2)}%</span></div>
         <div class="summary-row"><span>Profit per trade</span><span>${(profitPct*100).toFixed(2)}%</span></div>
-        <div class="summary-row"><span>Fee round trip</span><span>${(feeRound*100).toFixed(2)}%</span></div>
+        <div class="summary-row"><span>Leverage</span><span>${leverageVal}x</span></div>
+        <div class="summary-row"><span>Fee round trip</span><span>${(feeRate*100).toFixed(2)}%</span></div>
         <div class="summary-row"><span>Jumlah trade</span><span>${trades}</span></div>
       </div>
 
@@ -220,9 +221,15 @@ function calculate() {
     <div class="table-wrapper">
       <table>
         <tr>
-          <th>#</th><th>Modal</th><th>Posisi</th><th>Profit</th><th>Fee</th><th>Total</th>
+          <th>#</th>
+          <th>Modal</th>
+          <th>Margin</th>
+          <th>Lev</th>
+          <th>Profit</th>
+          <th>Fee</th>
+          <th>Total</th>
         </tr>
-        ${rows}
+        ${rows.join("")}
       </table>
     </div>
   </div>`;
@@ -232,31 +239,26 @@ function calculate() {
 
 function drawChart(labels, data) {
   const ctx = document.getElementById("equityChart");
-
   if (equityChart) equityChart.destroy();
 
   equityChart = new Chart(ctx, {
     type: "line",
     data: {
-      labels: labels,
+      labels,
       datasets: [{
-        label: "Equity Curve",
-        data: data,
+        data,
         borderColor: "#22c55e",
         backgroundColor: "rgba(34,197,94,0.15)",
-        tension: 0.25,
-        fill: true
+        fill: true,
+        tension: 0.25
       }]
     },
     options: {
       responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false }
-      },
+      plugins: { legend: { display: false } },
       scales: {
-        x: { title: { display: true, text: "Trade" }},
-        y: { title: { display: true, text: "Modal ($)" }}
+        x: { title: { display: true, text: "Trade" } },
+        y: { title: { display: true, text: "Modal ($)" } }
       }
     }
   });
