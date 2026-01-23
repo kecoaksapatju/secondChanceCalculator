@@ -2,76 +2,123 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Compound Trading Calculator</title>
+<title>SecondChance Compound Calculator</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <style>
   body {
-    font-family: Arial, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     background: #0f172a;
     color: #e5e7eb;
-    padding: 20px;
+    margin: 0;
+    padding: 16px;
   }
+
   h2 {
-    margin-bottom: 10px;
+    text-align: center;
+    margin-bottom: 16px;
   }
+
+  .card {
+    background: #020617;
+    padding: 16px;
+    border-radius: 12px;
+    margin-bottom: 16px;
+  }
+
   label {
     font-size: 14px;
+    display: block;
+    margin-top: 10px;
+    margin-bottom: 4px;
   }
+
   input {
     width: 100%;
-    padding: 6px;
-    margin-bottom: 8px;
-  }
-  button {
-    padding: 10px;
-    width: 100%;
-    background: #22c55e;
+    padding: 12px;
+    font-size: 16px;
+    border-radius: 8px;
     border: none;
+    outline: none;
+  }
+
+  button {
+    margin-top: 16px;
+    width: 100%;
+    padding: 14px;
+    font-size: 18px;
     font-weight: bold;
+    border-radius: 10px;
+    border: none;
+    background: #22c55e;
+    color: #022c22;
     cursor: pointer;
   }
+
+  button:active {
+    transform: scale(0.98);
+  }
+
+  .table-wrapper {
+    overflow-x: auto;
+    margin-top: 16px;
+  }
+
   table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 20px;
     font-size: 13px;
+    min-width: 600px;
   }
+
   th, td {
     border: 1px solid #334155;
-    padding: 6px;
+    padding: 8px;
     text-align: right;
   }
+
   th {
     background: #1e293b;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+
+  td:first-child, th:first-child {
+    text-align: center;
   }
 </style>
 </head>
 
 <body>
 
-<h2>Compound Trading Calculator</h2>
+<h2>SecondChance Calculator</h2>
 
-<label>Modal Awal ($)</label>
-<input id="modal" type="number" value="100" step="0.01">
+<div class="card">
+  <label>Modal Awal ($)</label>
+  <input id="modal" type="number" value="100" step="0.01">
 
-<label>Alokasi Posisi (% dari modal)</label>
-<input id="posPercent" type="number" value="5">
+  <label>Alokasi Posisi (% dari modal)</label>
+  <input id="posPercent" type="number" value="5">
 
-<label>Profit per Trade (% dari posisi)</label>
-<input id="profitPercent" type="number" value="50">
+  <label>Profit per Trade (% dari posisi)</label>
+  <input id="profitPercent" type="number" value="50">
 
-<label>Fee Beli (%)</label>
-<input id="feeBuy" type="number" value="0.04" step="0.01">
+  <label>Fee Beli (%)</label>
+  <input id="feeBuy" type="number" value="0.04" step="0.01">
 
-<label>Fee Jual (%)</label>
-<input id="feeSell" type="number" value="0.04" step="0.01">
+  <label>Fee Jual (%)</label>
+  <input id="feeSell" type="number" value="0.04" step="0.01">
 
-<label>Funding Fee (%)</label>
-<input id="fundingFee" type="number" value="0" step="0.01">
+  <label>Funding Fee (%)</label>
+  <input id="fundingFee" type="number" value="0" step="0.01">
 
-<label>Jumlah Compound</label>
-<input id="loops" type="number" value="60">
+  <label>Jumlah Compound</label>
+  <input id="loops" type="number" value="60">
 
-<button onclick="calculate()">Hitung</button>
+  <button onclick="calculate()">Hitung</button>
+</div>
 
 <div id="result"></div>
 
@@ -86,6 +133,7 @@ function calculate() {
   const loops = parseInt(document.getElementById("loops").value);
 
   let html = `
+  <div class="table-wrapper">
   <table>
     <tr>
       <th>#</th>
@@ -117,7 +165,7 @@ function calculate() {
     modal = modalAkhir;
   }
 
-  html += "</table>";
+  html += "</table></div>";
   document.getElementById("result").innerHTML = html;
 }
 </script>
