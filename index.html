@@ -3,16 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <title>SecondChance Compound Calculator</title>
-
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <style>
-  /* === GLOBAL FIX (WAJIB) === */
-  *,
-  *::before,
-  *::after {
-    box-sizing: border-box;
-  }
+  *, *::before, *::after { box-sizing: border-box; }
 
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -22,10 +18,7 @@
     padding: 16px;
   }
 
-  h2 {
-    text-align: center;
-    margin-bottom: 16px;
-  }
+  h2 { text-align: center; margin-bottom: 16px; }
 
   .card {
     background: #020617;
@@ -38,7 +31,6 @@
     font-size: 14px;
     display: block;
     margin-top: 12px;
-    margin-bottom: 4px;
   }
 
   input {
@@ -47,7 +39,7 @@
     font-size: 16px;
     border-radius: 8px;
     border: none;
-    outline: none;
+    margin-top: 4px;
   }
 
   button {
@@ -60,16 +52,51 @@
     border: none;
     background: #22c55e;
     color: #022c22;
-    cursor: pointer;
   }
 
-  button:active {
-    transform: scale(0.98);
+  /* ===== SUMMARY ===== */
+  .summary-title {
+    text-align: center;
+    font-weight: bold;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
   }
 
+  .summary-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .summary-box {
+    background: #020617;
+    padding: 14px;
+    border-radius: 10px;
+    border: 1px solid #1e293b;
+  }
+
+  .summary-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    margin-bottom: 6px;
+  }
+
+  .summary-row span:last-child { font-weight: bold; }
+
+  @media (min-width: 640px) {
+    .summary-grid { grid-template-columns: 1fr 1fr; }
+  }
+
+  /* ===== CHART ===== */
+  .chart-wrapper {
+    margin-top: 20px;
+  }
+
+  /* ===== TABLE ===== */
   .table-wrapper {
+    margin-top: 20px;
     overflow-x: auto;
-    margin-top: 16px;
   }
 
   table {
@@ -85,17 +112,8 @@
     text-align: right;
   }
 
-  th {
-    background: #1e293b;
-    position: sticky;
-    top: 0;
-    z-index: 1;
-  }
-
-  td:first-child,
-  th:first-child {
-    text-align: center;
-  }
+  th { background: #1e293b; }
+  td:first-child, th:first-child { text-align: center; }
 </style>
 </head>
 
@@ -105,7 +123,7 @@
 
 <div class="card">
   <label>Modal Awal ($)</label>
-  <input id="modal" type="number" value="100" step="0.01">
+  <input id="modal" type="number" value="100">
 
   <label>Alokasi Posisi (% dari modal)</label>
   <input id="posPercent" type="number" value="5">
@@ -114,15 +132,15 @@
   <input id="profitPercent" type="number" value="50">
 
   <label>Fee Beli (%)</label>
-  <input id="feeBuy" type="number" value="0.04" step="0.01">
+  <input id="feeBuy" type="number" value="0.04">
 
   <label>Fee Jual (%)</label>
-  <input id="feeSell" type="number" value="0.04" step="0.01">
+  <input id="feeSell" type="number" value="0.04">
 
   <label>Funding Fee (%)</label>
-  <input id="fundingFee" type="number" value="0" step="0.01">
+  <input id="fundingFee" type="number" value="0">
 
-  <label>Jumlah Compound</label>
+  <label>Jumlah Trade</label>
   <input id="loops" type="number" value="60">
 
   <button onclick="calculate()">Hitung</button>
@@ -131,53 +149,117 @@
 <div id="result"></div>
 
 <script>
+let equityChart = null;
+
 function calculate() {
-  let modal = parseFloat(document.getElementById("modal").value);
-  const posPct = parseFloat(document.getElementById("posPercent").value) / 100;
-  const profitPct = parseFloat(document.getElementById("profitPercent").value) / 100;
-  const feeBuy = parseFloat(document.getElementById("feeBuy").value) / 100;
-  const feeSell = parseFloat(document.getElementById("feeSell").value) / 100;
-  const funding = parseFloat(document.getElementById("fundingFee").value) / 100;
-  const loops = parseInt(document.getElementById("loops").value);
+  const modalAwal = parseFloat(modal.value);
+  let modalNow = modalAwal;
 
-  let html = `
-  <div class="table-wrapper">
-    <table>
-      <tr>
-        <th>#</th>
-        <th>Modal</th>
-        <th>Posisi</th>
-        <th>Profit</th>
-        <th>Fee</th>
-        <th>Total</th>
-      </tr>`;
+  const posPct = posPercent.value / 100;
+  const profitPct = profitPercent.value / 100;
+  const feeRound = (Number(feeBuy.value) + Number(feeSell.value) + Number(fundingFee.value)) / 100;
+  const trades = Number(loops.value);
 
-  for (let i = 1; i <= loops; i++) {
-    let modalAwal = modal;
-    let posisi = modalAwal * posPct;
-    let grossProfit = posisi * profitPct;
-    let fee = posisi * (feeBuy + feeSell + funding);
-    let netProfit = grossProfit - fee;
-    let modalAkhir = modalAwal + netProfit;
+  let totalProfit = 0;
+  let rows = "";
+  let equity = [modalAwal];
+  let labels = ["0"];
 
-    html += `
+  for (let i = 1; i <= trades; i++) {
+    const modalBefore = modalNow;
+    const posisi = modalBefore * posPct;
+    const grossProfit = posisi * profitPct;
+    const fee = posisi * feeRound;
+    const netProfit = grossProfit - fee;
+
+    modalNow += netProfit;
+    totalProfit += netProfit;
+
+    equity.push(modalNow);
+    labels.push(i.toString());
+
+    rows += `
       <tr>
         <td>${i}</td>
-        <td>${modalAwal.toFixed(2)}</td>
+        <td>${modalBefore.toFixed(2)}</td>
         <td>${posisi.toFixed(2)}</td>
         <td>${netProfit.toFixed(2)}</td>
         <td>${fee.toFixed(4)}</td>
-        <td>${modalAkhir.toFixed(2)}</td>
+        <td>${modalNow.toFixed(2)}</td>
       </tr>`;
-
-    modal = modalAkhir;
   }
 
-  html += `
-    </table>
+  const roi = (totalProfit / modalAwal) * 100;
+  const avgProfit = totalProfit / trades;
+
+  document.getElementById("result").innerHTML = `
+  <div class="card">
+    <div class="summary-title">SUMMARY</div>
+
+    <div class="summary-grid">
+      <div class="summary-box">
+        <div class="summary-row"><span>Modal awal</span><span>$${modalAwal.toFixed(2)}</span></div>
+        <div class="summary-row"><span>Posisi per trade</span><span>${(posPct*100).toFixed(2)}%</span></div>
+        <div class="summary-row"><span>Profit per trade</span><span>${(profitPct*100).toFixed(2)}%</span></div>
+        <div class="summary-row"><span>Fee round trip</span><span>${(feeRound*100).toFixed(2)}%</span></div>
+        <div class="summary-row"><span>Jumlah trade</span><span>${trades}</span></div>
+      </div>
+
+      <div class="summary-box">
+        <div class="summary-row"><span>Modal akhir</span><span>$${modalNow.toFixed(2)}</span></div>
+        <div class="summary-row"><span>Total profit</span><span>$${totalProfit.toFixed(2)}</span></div>
+        <div class="summary-row"><span>ROI total</span><span>${roi.toFixed(1)}%</span></div>
+        <div class="summary-row"><span>Avg profit/trade</span><span>$${avgProfit.toFixed(2)}</span></div>
+      </div>
+    </div>
+
+    <div class="chart-wrapper">
+      <canvas id="equityChart"></canvas>
+    </div>
+
+    <div class="table-wrapper">
+      <table>
+        <tr>
+          <th>#</th><th>Modal</th><th>Posisi</th><th>Profit</th><th>Fee</th><th>Total</th>
+        </tr>
+        ${rows}
+      </table>
+    </div>
   </div>`;
 
-  document.getElementById("result").innerHTML = html;
+  drawChart(labels, equity);
+}
+
+function drawChart(labels, data) {
+  const ctx = document.getElementById("equityChart");
+
+  if (equityChart) equityChart.destroy();
+
+  equityChart = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: labels,
+      datasets: [{
+        label: "Equity Curve",
+        data: data,
+        borderColor: "#22c55e",
+        backgroundColor: "rgba(34,197,94,0.15)",
+        tension: 0.25,
+        fill: true
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false }
+      },
+      scales: {
+        x: { title: { display: true, text: "Trade" }},
+        y: { title: { display: true, text: "Modal ($)" }}
+      }
+    }
+  });
 }
 </script>
 
