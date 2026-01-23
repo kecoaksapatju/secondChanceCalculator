@@ -50,7 +50,6 @@
     color: #022c22;
   }
 
-  /* SUMMARY */
   .summary-title {
     text-align: center;
     font-weight: bold;
@@ -84,10 +83,8 @@
     .summary-grid { grid-template-columns: 1fr 1fr; }
   }
 
-  /* CHART */
   .chart-wrapper { margin-top: 20px; }
 
-  /* TABLE */
   .table-wrapper {
     margin-top: 20px;
     overflow-x: auto;
@@ -95,7 +92,7 @@
 
   table {
     width: 100%;
-    min-width: 700px;
+    min-width: 720px;
     border-collapse: collapse;
     font-size: 13px;
   }
@@ -159,20 +156,22 @@ function calculate() {
   const trades = Number(loops.value);
 
   let totalProfit = 0;
+  let totalFee = 0;
   let rows = [];
   let equity = [modalAwal];
   let labels = ["0"];
 
   for (let i = 1; i <= trades; i++) {
     const modalBefore = modalNow;
-    const posisi = modalBefore * posPct;          // margin
-    const notional = posisi * leverageVal;        // actual position
-    const grossProfit = posisi * profitPct;       // profit from margin
-    const fee = notional * feeRate;               // fee from notional
+    const margin = modalBefore * posPct;
+    const notional = margin * leverageVal;
+    const grossProfit = margin * profitPct;
+    const fee = notional * feeRate;
     const netProfit = grossProfit - fee;
 
     modalNow += netProfit;
     totalProfit += netProfit;
+    totalFee += fee;
 
     equity.push(modalNow);
     labels.push(i.toString());
@@ -181,7 +180,7 @@ function calculate() {
       <tr>
         <td>${i}</td>
         <td>${modalBefore.toFixed(2)}</td>
-        <td>${posisi.toFixed(2)}</td>
+        <td>${margin.toFixed(2)}</td>
         <td>${leverageVal}x</td>
         <td>${netProfit.toFixed(2)}</td>
         <td>${fee.toFixed(4)}</td>
@@ -209,6 +208,7 @@ function calculate() {
       <div class="summary-box">
         <div class="summary-row"><span>Modal akhir</span><span>$${modalNow.toFixed(2)}</span></div>
         <div class="summary-row"><span>Total profit</span><span>$${totalProfit.toFixed(2)}</span></div>
+        <div class="summary-row"><span>Total fee</span><span>$${totalFee.toFixed(2)}</span></div>
         <div class="summary-row"><span>ROI total</span><span>${roi.toFixed(1)}%</span></div>
         <div class="summary-row"><span>Avg profit/trade</span><span>$${avgProfit.toFixed(2)}</span></div>
       </div>
