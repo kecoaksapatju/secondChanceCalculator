@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <title>SecondChance Compound Calculator</title>
@@ -20,13 +20,13 @@ body {
 
 h2 {
   text-align: center;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
-.info {
-  font-size: 13px;
-  color: #cbd5f5;
+.subtitle {
   text-align: center;
+  font-size: 13px;
+  color: #94a3b8;
   margin-bottom: 16px;
 }
 
@@ -62,7 +62,6 @@ button {
   border: none;
   background: #22c55e;
   color: #022c22;
-  cursor: pointer;
 }
 
 /* ===== SUMMARY ===== */
@@ -103,22 +102,10 @@ button {
   }
 }
 
-/* ===== INFO MATH ===== */
-.math-info {
-  margin-top: 12px;
-  font-size: 13px;
-  color: #eab308;
-  text-align: center;
-}
-
 /* ===== CHART ===== */
 .chart-wrapper {
   margin-top: 20px;
-  height: 220px; /* ← tinggi DIKUNCI */
-}
-
-.chart-wrapper canvas {
-  height: 220px !important;
+  height: 260px;
 }
 
 /* ===== TABLE ===== */
@@ -144,8 +131,7 @@ th {
   background: #1e293b;
 }
 
-td:first-child,
-th:first-child {
+td:first-child, th:first-child {
   text-align: center;
 }
 </style>
@@ -154,8 +140,8 @@ th:first-child {
 <body>
 
 <h2>SecondChance Calculator</h2>
-<div class="info">
-  ⓘ Kalkulator ini mensimulasikan dampak rata-rata win per trade terhadap pertumbuhan modal, profit, fee, dan ROI.
+<div class="subtitle">
+ⓘ Simulasi matematis — bukan hasil trading nyata. Gunakan sebagai referensi dan lakukan trading dengan hati-hati.
 </div>
 
 <div class="card">
@@ -195,30 +181,27 @@ function calculate() {
   const modalAwal = Number(modal.value);
   let modalNow = modalAwal;
 
-  const posPct = Number(posPercent.value) / 100;
-  const profitPct = Number(profitPercent.value) / 100;
-  const lev = Number(leverage.value);
-
-  const feeRound =
-    (Number(feeBuy.value) + Number(feeSell.value) + Number(fundingFee.value)) / 100;
-
+  const posPct = posPercent.value / 100;
+  const profitPct = profitPercent.value / 100;
+  const leverageVal = Number(leverage.value);
+  const feeRound = (Number(feeBuy.value) + Number(feeSell.value) + Number(fundingFee.value)) / 100;
   const trades = Number(loops.value);
 
+  let totalProfit = 0;
   let totalFee = 0;
   let rows = "";
-
   let equity = [modalAwal];
   let labels = ["0"];
 
   for (let i = 1; i <= trades; i++) {
     const modalBefore = modalNow;
     const posisi = modalBefore * posPct;
-
     const grossProfit = posisi * profitPct;
-    const fee = posisi * lev * feeRound;
+    const fee = posisi * feeRound;
     const netProfit = grossProfit - fee;
 
     modalNow += netProfit;
+    totalProfit += netProfit;
     totalFee += fee;
 
     equity.push(modalNow);
@@ -229,16 +212,14 @@ function calculate() {
         <td>${i}</td>
         <td>${modalBefore.toFixed(2)}</td>
         <td>${posisi.toFixed(2)}</td>
-        <td>${grossProfit.toFixed(2)}</td>
+        <td>${netProfit.toFixed(2)}</td>
         <td>${fee.toFixed(4)}</td>
         <td>${modalNow.toFixed(2)}</td>
       </tr>`;
   }
 
-  const totalProfit = modalNow - modalAwal;
   const roi = (totalProfit / modalAwal) * 100;
   const avgProfit = totalProfit / trades;
-  const minProfitPct = feeRound * lev * 100;
 
   document.getElementById("result").innerHTML = `
   <div class="card">
@@ -247,16 +228,20 @@ function calculate() {
     <div class="summary-grid">
       <div class="summary-box">
         <div class="summary-row"><span>Modal awal</span><span>$${modalAwal.toFixed(2)}</span></div>
+        <div class="summary-row"><span>Posisi per trade</span><span>${(posPct*100).toFixed(2)}%</span></div>
+        <div class="summary-row"><span>Profit per trade</span><span>${(profitPct*100).toFixed(2)}%</span></div>
+        <div class="summary-row"><span>Leverage</span><span>${leverageVal}x</span></div>
+        <div class="summary-row"><span>Fee round trip</span><span>${(feeRound*100).toFixed(2)}%</span></div>
+        <div class="summary-row"><span>Jumlah trade</span><span>${trades}</span></div>
+      </div>
+
+      <div class="summary-box">
         <div class="summary-row"><span>Modal akhir</span><span>$${modalNow.toFixed(2)}</span></div>
         <div class="summary-row"><span>Total profit</span><span>$${totalProfit.toFixed(2)}</span></div>
         <div class="summary-row"><span>Total fee</span><span>$${totalFee.toFixed(2)}</span></div>
-        <div class="summary-row"><span>ROI</span><span>${roi.toFixed(1)}%</span></div>
+        <div class="summary-row"><span>ROI total</span><span>${roi.toFixed(1)}%</span></div>
+        <div class="summary-row"><span>Avg profit/trade</span><span>$${avgProfit.toFixed(2)}</span></div>
       </div>
-    </div>
-
-    <div class="math-info">
-      Selama profit per trade ≥ ${minProfitPct.toFixed(2)}% dari margin, trade TIDAK akan rugi secara matematis.
-      (Rumus: Fee × Leverage)
     </div>
 
     <div class="chart-wrapper">
@@ -266,12 +251,7 @@ function calculate() {
     <div class="table-wrapper">
       <table>
         <tr>
-          <th>#</th>
-          <th>Modal</th>
-          <th>Posisi</th>
-          <th>Profit</th>
-          <th>Fee</th>
-          <th>Total</th>
+          <th>#</th><th>Modal</th><th>Posisi</th><th>Profit</th><th>Fee</th><th>Total</th>
         </tr>
         ${rows}
       </table>
@@ -283,7 +263,6 @@ function calculate() {
 
 function drawChart(labels, data) {
   const ctx = document.getElementById("equityChart");
-
   if (equityChart) equityChart.destroy();
 
   equityChart = new Chart(ctx, {
@@ -300,11 +279,11 @@ function drawChart(labels, data) {
     },
     options: {
       responsive: true,
-      maintainAspectRatio: false, /* ← KUNCI TINGGI */
+      maintainAspectRatio: false,
       plugins: { legend: { display: false } },
       scales: {
-        x: { title: { display: true, text: "Trade" } },
-        y: { title: { display: true, text: "Modal ($)" } }
+        x: { title: { display: true, text: "Trade" }},
+        y: { title: { display: true, text: "Modal ($)" }}
       }
     }
   });
