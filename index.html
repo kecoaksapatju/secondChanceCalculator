@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Compound Trading Calculator</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #0f172a;
+    color: #e5e7eb;
+    padding: 20px;
+  }
+  h2 {
+    margin-bottom: 10px;
+  }
+  label {
+    font-size: 14px;
+  }
+  input {
+    width: 100%;
+    padding: 6px;
+    margin-bottom: 8px;
+  }
+  button {
+    padding: 10px;
+    width: 100%;
+    background: #22c55e;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    font-size: 13px;
+  }
+  th, td {
+    border: 1px solid #334155;
+    padding: 6px;
+    text-align: right;
+  }
+  th {
+    background: #1e293b;
+  }
+</style>
+</head>
+
+<body>
+
+<h2>Compound Trading Calculator</h2>
+
+<label>Modal Awal ($)</label>
+<input id="modal" type="number" value="100" step="0.01">
+
+<label>Alokasi Posisi (% dari modal)</label>
+<input id="posPercent" type="number" value="5">
+
+<label>Profit per Trade (% dari posisi)</label>
+<input id="profitPercent" type="number" value="50">
+
+<label>Fee Beli (%)</label>
+<input id="feeBuy" type="number" value="0.04" step="0.01">
+
+<label>Fee Jual (%)</label>
+<input id="feeSell" type="number" value="0.04" step="0.01">
+
+<label>Funding Fee (%)</label>
+<input id="fundingFee" type="number" value="0" step="0.01">
+
+<label>Jumlah Compound</label>
+<input id="loops" type="number" value="60">
+
+<button onclick="calculate()">Hitung</button>
+
+<div id="result"></div>
+
+<script>
+function calculate() {
+  let modal = parseFloat(document.getElementById("modal").value);
+  const posPct = parseFloat(document.getElementById("posPercent").value) / 100;
+  const profitPct = parseFloat(document.getElementById("profitPercent").value) / 100;
+  const feeBuy = parseFloat(document.getElementById("feeBuy").value) / 100;
+  const feeSell = parseFloat(document.getElementById("feeSell").value) / 100;
+  const funding = parseFloat(document.getElementById("fundingFee").value) / 100;
+  const loops = parseInt(document.getElementById("loops").value);
+
+  let html = `
+  <table>
+    <tr>
+      <th>#</th>
+      <th>Modal</th>
+      <th>Posisi</th>
+      <th>Profit</th>
+      <th>Fee</th>
+      <th>Total</th>
+    </tr>`;
+
+  for (let i = 1; i <= loops; i++) {
+    let modalAwal = modal;
+    let posisi = modalAwal * posPct;
+    let grossProfit = posisi * profitPct;
+    let fee = posisi * (feeBuy + feeSell + funding);
+    let netProfit = grossProfit - fee;
+    let modalAkhir = modalAwal + netProfit;
+
+    html += `
+    <tr>
+      <td>${i}</td>
+      <td>${modalAwal.toFixed(2)}</td>
+      <td>${posisi.toFixed(2)}</td>
+      <td>${netProfit.toFixed(2)}</td>
+      <td>${fee.toFixed(4)}</td>
+      <td>${modalAkhir.toFixed(2)}</td>
+    </tr>`;
+
+    modal = modalAkhir;
+  }
+
+  html += "</table>";
+  document.getElementById("result").innerHTML = html;
+}
+</script>
+
+</body>
+</html>
