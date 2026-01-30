@@ -6,11 +6,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 body {
   font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
   background: #0f172a;
   color: #e5e7eb;
   padding: 16px;
+  margin: 0;
 }
 
 h2 {
@@ -23,6 +30,9 @@ h2 {
   padding: 16px;
   border-radius: 12px;
   margin-bottom: 16px;
+  max-width: 480px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 label {
@@ -33,7 +43,7 @@ label {
 
 input {
   width: 100%;
-  padding: 10px;
+  padding: 12px;
   margin-top: 4px;
   font-size: 16px;
   border-radius: 8px;
@@ -69,7 +79,8 @@ th {
   background: #1e293b;
 }
 
-td:first-child, th:first-child {
+td:first-child,
+th:first-child {
   text-align: center;
 }
 
@@ -109,7 +120,6 @@ function calculate() {
   const cycles = Number(document.getElementById("cycles").value);
   const wdPct = Number(document.getElementById("wd").value) / 100;
 
-  // growth factor sesuai hasil kalkulator sebelumnya
   const growthFactor14 = 1.2662;
   const growthFactor = Math.pow(growthFactor14, tradePerCycle / 14);
 
