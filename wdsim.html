@@ -30,11 +30,12 @@ h2 {
   padding: 16px;
   border-radius: 12px;
   margin-bottom: 16px;
-  max-width: 480px;
+  max-width: 520px;
   margin-left: auto;
   margin-right: auto;
 }
 
+/* ===== FORM ===== */
 label {
   display: block;
   font-size: 14px;
@@ -60,12 +61,19 @@ button {
   border: none;
   background: #22c55e;
   color: #022c22;
+  cursor: pointer;
+}
+
+/* ===== TABLE ===== */
+.table-wrapper {
+  overflow-x: auto;
+  margin-top: 16px;
 }
 
 table {
   width: 100%;
+  min-width: 520px;
   border-collapse: collapse;
-  margin-top: 16px;
   font-size: 14px;
 }
 
@@ -84,9 +92,11 @@ th:first-child {
   text-align: center;
 }
 
+/* ===== SUMMARY ===== */
 .summary {
   margin-top: 12px;
   font-size: 14px;
+  line-height: 1.6;
 }
 </style>
 </head>
@@ -120,8 +130,10 @@ function calculate() {
   const cycles = Number(document.getElementById("cycles").value);
   const wdPct = Number(document.getElementById("wd").value) / 100;
 
-  const growthFactor14 = 1.2662;
-  const growthFactor = Math.pow(growthFactor14, tradePerCycle / 14);
+  // Growth factor sesuai kalkulator sebelumnya:
+  // 14 trade = modal ke-15 = ×1.2662
+  const baseGrowth14 = 1.2662;
+  const growthFactor = Math.pow(baseGrowth14, tradePerCycle / 14);
 
   let modal = modalAwal;
   let totalWD = 0;
@@ -149,16 +161,18 @@ function calculate() {
 
   document.getElementById("result").innerHTML = `
     <div class="card">
-      <table>
-        <tr>
-          <th>Siklus</th>
-          <th>Modal Awal</th>
-          <th>Equity</th>
-          <th>WD</th>
-          <th>Modal Lanjut</th>
-        </tr>
-        ${rows}
-      </table>
+      <div class="table-wrapper">
+        <table>
+          <tr>
+            <th>Siklus</th>
+            <th>Modal Awal</th>
+            <th>Equity</th>
+            <th>WD</th>
+            <th>Modal Lanjut</th>
+          </tr>
+          ${rows}
+        </table>
+      </div>
 
       <div class="summary">
         <strong>Total Withdraw:</strong> $${totalWD.toFixed(2)}<br>
