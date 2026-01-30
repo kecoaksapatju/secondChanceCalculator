@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Compound + Withdraw Simulator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body {
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  background: #0f172a;
+  color: #e5e7eb;
+  padding: 16px;
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.card {
+  background: #020617;
+  padding: 16px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+
+label {
+  display: block;
+  font-size: 14px;
+  margin-top: 12px;
+}
+
+input {
+  width: 100%;
+  padding: 10px;
+  margin-top: 4px;
+  font-size: 16px;
+  border-radius: 8px;
+  border: none;
+}
+
+button {
+  margin-top: 16px;
+  width: 100%;
+  padding: 14px;
+  font-size: 18px;
+  font-weight: bold;
+  border-radius: 10px;
+  border: none;
+  background: #22c55e;
+  color: #022c22;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+  font-size: 14px;
+}
+
+th, td {
+  border: 1px solid #334155;
+  padding: 8px;
+  text-align: right;
+}
+
+th {
+  background: #1e293b;
+}
+
+td:first-child, th:first-child {
+  text-align: center;
+}
+
+.summary {
+  margin-top: 12px;
+  font-size: 14px;
+}
+</style>
+</head>
+
+<body>
+
+<h2>Compound + Withdraw Simulator</h2>
+
+<div class="card">
+  <label>Modal Awal ($)</label>
+  <input id="modal" type="number" value="100">
+
+  <label>Trade per Siklus</label>
+  <input id="trades" type="number" value="14">
+
+  <label>Jumlah Siklus</label>
+  <input id="cycles" type="number" value="10">
+
+  <label>Withdraw (%)</label>
+  <input id="wd" type="number" value="7">
+
+  <button onclick="calculate()">Hitung</button>
+</div>
+
+<div id="result"></div>
+
+<script>
+function calculate() {
+  const modalAwal = Number(document.getElementById("modal").value);
+  const tradePerCycle = Number(document.getElementById("trades").value);
+  const cycles = Number(document.getElementById("cycles").value);
+  const wdPct = Number(document.getElementById("wd").value) / 100;
+
+  // growth factor sesuai hasil kalkulator sebelumnya
+  const growthFactor14 = 1.2662;
+  const growthFactor = Math.pow(growthFactor14, tradePerCycle / 14);
+
+  let modal = modalAwal;
+  let totalWD = 0;
+  let rows = "";
+
+  for (let i = 1; i <= cycles; i++) {
+    const equity = modal * growthFactor;
+    const wd = equity * wdPct;
+    const modalNext = equity - wd;
+
+    totalWD += wd;
+
+    rows += `
+      <tr>
+        <td>${i}</td>
+        <td>${modal.toFixed(2)}</td>
+        <td>${equity.toFixed(2)}</td>
+        <td>${wd.toFixed(2)}</td>
+        <td>${modalNext.toFixed(2)}</td>
+      </tr>
+    `;
+
+    modal = modalNext;
+  }
+
+  document.getElementById("result").innerHTML = `
+    <div class="card">
+      <table>
+        <tr>
+          <th>Siklus</th>
+          <th>Modal Awal</th>
+          <th>Equity</th>
+          <th>WD</th>
+          <th>Modal Lanjut</th>
+        </tr>
+        ${rows}
+      </table>
+
+      <div class="summary">
+        <strong>Total Withdraw:</strong> $${totalWD.toFixed(2)}<br>
+        <strong>Modal Akhir:</strong> $${modal.toFixed(2)}
+      </div>
+    </div>
+  `;
+}
+</script>
+
+</body>
+</html>
