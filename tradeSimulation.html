@@ -156,6 +156,9 @@ Bersifat simulasi matematis, bukan hasil trading nyata. Gunakan sebagai referens
   <label>WD Profit/Trade (% dari profit)</label>
   <input id="wdProfitPercent" type="number" value="50">
 
+  <label>WD Interval (trade)</label>
+  <input id="wdInterval" type="number" value="1">
+
   <label>Leverage (x)</label>
   <input id="leverage" type="number" value="200">
 
@@ -186,6 +189,7 @@ function calculate() {
   const posPct = Number(posPercent.value) / 100;
   const profitPct = Number(profitPercent.value) / 100;
   const wdProfitPct = Number(wdProfitPercent.value) / 100;
+  const wdInterval = Number(wdInterval.value);
   const lev = Number(leverage.value);
 
   const feeRoundPct =
@@ -198,6 +202,7 @@ function calculate() {
   let totalProfit = 0;
   let totalFee = 0;
   let totalWD = 0;
+  let pendingProfit = 0;
 
   let rows = "";
   let equity = [modalAwal];
@@ -211,10 +216,16 @@ function calculate() {
     const fee = (margin * lev) * (feeRoundPct / 100);
     const netProfit = grossProfit - fee;
 
-    const wdProfit = netProfit * wdProfitPct;
-    totalWD += wdProfit;
+    pendingProfit += netProfit;
 
-    modalNow += netProfit - wdProfit;
+    let wd = 0;
+    if (i % wdInterval === 0) {
+      wd = pendingProfit * wdProfitPct;
+      totalWD += wd;
+      pendingProfit -= wd;
+    }
+
+    modalNow += netProfit - wd;
     totalProfit += netProfit;
     totalFee += fee;
 
@@ -246,6 +257,7 @@ function calculate() {
         <div class="summary-row"><span>Posisi per trade</span><span>${(posPct*100).toFixed(2)}%</span></div>
         <div class="summary-row"><span>Profit per trade</span><span>${(profitPct*100).toFixed(2)}%</span></div>
         <div class="summary-row"><span>WD Profit/Trade</span><span>${(wdProfitPct*100).toFixed(2)}%</span></div>
+        <div class="summary-row"><span>WD Interval</span><span>${wdInterval}</span></div>
         <div class="summary-row"><span>Leverage</span><span>${lev}x</span></div>
         <div class="summary-row"><span>Fee round trip</span><span>${feeRoundPct.toFixed(2)}%</span></div>
         <div class="summary-row"><span>Jumlah trade</span><span>${trades}</span></div>
