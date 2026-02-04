@@ -153,10 +153,10 @@ Bersifat simulasi matematis, bukan hasil trading nyata. Gunakan sebagai referens
   <label>Profit per Trade (% dari posisi)</label>
   <input id="profitPercent" type="number" value="50">
 
-  <label>WD Profit/Trade (% dari profit)</label>
-  <input id="wdProfitPercent" type="number" value="50">
+  <label>WD Profit/Trade (%)</label>
+  <input id="wdPercent" type="number" value="50">
 
-  <label>WD Interval (trade)</label>
+  <label>WD interval</label>
   <input id="wdInterval" type="number" value="1">
 
   <label>Leverage (x)</label>
@@ -188,8 +188,9 @@ function calculate() {
 
   const posPct = Number(posPercent.value) / 100;
   const profitPct = Number(profitPercent.value) / 100;
-  const wdProfitPct = Number(wdProfitPercent.value) / 100;
-  const wdInterval = Number(wdInterval.value);
+  const wdPct = Number(wdPercent.value) / 100;
+  const wdInt = Number(wdInterval.value);
+
   const lev = Number(leverage.value);
 
   const feeRoundPct =
@@ -202,7 +203,7 @@ function calculate() {
   let totalProfit = 0;
   let totalFee = 0;
   let totalWD = 0;
-  let pendingProfit = 0;
+  let bufferProfit = 0;
 
   let rows = "";
   let equity = [modalAwal];
@@ -216,18 +217,16 @@ function calculate() {
     const fee = (margin * lev) * (feeRoundPct / 100);
     const netProfit = grossProfit - fee;
 
-    pendingProfit += netProfit;
-
-    let wd = 0;
-    if (i % wdInterval === 0) {
-      wd = pendingProfit * wdProfitPct;
-      totalWD += wd;
-      pendingProfit -= wd;
-    }
-
-    modalNow += netProfit - wd;
+    bufferProfit += netProfit;
     totalProfit += netProfit;
     totalFee += fee;
+
+    if (i % wdInt === 0) {
+      const wdAmount = bufferProfit * wdPct;
+      totalWD += wdAmount;
+      modalNow += (bufferProfit - wdAmount);
+      bufferProfit = 0;
+    }
 
     equity.push(modalNow);
     labels.push(i.toString());
@@ -256,8 +255,8 @@ function calculate() {
         <div class="summary-row"><span>Modal awal</span><span>$${modalAwal.toFixed(2)}</span></div>
         <div class="summary-row"><span>Posisi per trade</span><span>${(posPct*100).toFixed(2)}%</span></div>
         <div class="summary-row"><span>Profit per trade</span><span>${(profitPct*100).toFixed(2)}%</span></div>
-        <div class="summary-row"><span>WD Profit/Trade</span><span>${(wdProfitPct*100).toFixed(2)}%</span></div>
-        <div class="summary-row"><span>WD Interval</span><span>${wdInterval}</span></div>
+        <div class="summary-row"><span>WD Profit/Trade</span><span>${(wdPct*100).toFixed(2)}%</span></div>
+        <div class="summary-row"><span>WD interval</span><span>${wdInt}</span></div>
         <div class="summary-row"><span>Leverage</span><span>${lev}x</span></div>
         <div class="summary-row"><span>Fee round trip</span><span>${feeRoundPct.toFixed(2)}%</span></div>
         <div class="summary-row"><span>Jumlah trade</span><span>${trades}</span></div>
