@@ -6,31 +6,102 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-/* Same styles as before, unchanged */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  background: #0f172a;
+  color: #e5e7eb;
+  padding: 16px;
+  margin: 0;
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.card {
+  background: #020617;
+  padding: 16px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  max-width: 520px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ===== FORM ===== */
+label {
+  display: block;
+  font-size: 14px;
+  margin-top: 12px;
+}
+
+input {
+  width: 100%;
+  padding: 12px;
+  margin-top: 4px;
+  font-size: 16px;
+  border-radius: 8px;
+  border: none;
+}
+
+button {
+  margin-top: 16px;
+  width: 100%;
+  padding: 14px;
+  font-size: 18px;
+  font-weight: bold;
+  border-radius: 10px;
+  border: none;
+  background: #22c55e;
+  color: #022c22;
+  cursor: pointer;
+}
+
+.result {
+  margin-top: 12px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* ===== Deskripsi Keterangan ===== */
+.description {
+  font-size: 12px;
+  font-style: italic;
+  color: #a1a1a1;
+  margin-top: -8px;
+  text-align: center;
+}
+
+/* ===== Hasil ===== */
 .result-box {
-  background-color: #fff;
+  background-color: #020617; /* Same as the top box */
   padding: 12px;
   border-radius: 8px;
   text-align: center;
-  margin-top: 8px;
-  border: 1px solid #ccc;
+  margin-top: 8px; /* Reduced spacing */
 }
 
 .result-box p {
-  font-size: 16px;
+  font-size: 16px; /* Adjusted font size */
   font-weight: bold;
-  color: #e5e7eb;
-  margin-bottom: 4px;
+  color: #e5e7eb; /* Light text color */
+  margin-bottom: 4px; /* Reduced spacing between title and value */
 }
 
 .result-box .value {
-  font-size: 18px;
-  color: #000;
+  font-size: 18px; /* Smaller font size */
+  color: #000; /* Changed to black text */
   padding: 6px;
   border-radius: 4px;
-  background-color: #f3f4f6;
-  border: 1px solid #ccc;
-  cursor: pointer;
+  background-color: #fff; /* White background for value box */
+  border: 1px solid #ccc; /* Light border for the value box */
 }
 </style>
 </head>
@@ -39,8 +110,24 @@
 
 <h2>TP & SL Calculator</h2>
 
+<div class="description">
+  <p>Masukkan harga entry, target profit, target loss, dan leverage untuk menghitung harga Take Profit (TP) dan Stop Loss (SL). Semua input menggunakan persentase (%) kecuali harga entry.</p>
+</div>
+
 <div class="card">
-  <!-- Input fields remain unchanged -->
+  <label>Harga Entry</label>
+  <input id="entryPrice" type="number" placeholder="Contoh: 0.745709">
+
+  <label>Target Profit (%)</label>
+  <input id="targetProfit" type="number" value="80">
+
+  <label>Target Loss (%)</label>
+  <input id="targetLoss" type="number" value="-600">
+
+  <label>Leverage</label>
+  <input id="leverage" type="number" value="200">
+
+  <button onclick="calculate()">Hitung</button>
 </div>
 
 <div id="result" class="result"></div>
@@ -66,22 +153,12 @@ function calculate() {
   document.getElementById("result").innerHTML = `
     <div class="result-box">
       <p>Harga Take Profit (TP)</p>
-      <div class="value" onclick="copyToClipboard('${tpPrice.toFixed(6)}')">${tpPrice.toFixed(6)}</div>
+      <div class="value">${tpPrice.toFixed(6)}</div>
 
       <p>Harga Stop Loss (SL)</p>
-      <div class="value" onclick="copyToClipboard('${slPrice.toFixed(6)}')">${slPrice.toFixed(6)}</div>
+      <div class="value">${slPrice.toFixed(6)}</div>
     </div>
   `;
-}
-
-function copyToClipboard(value) {
-  const textArea = document.createElement('textarea');
-  textArea.value = value;
-  document.body.appendChild(textArea);
-  textArea.select();
-  document.execCommand('copy');
-  document.body.removeChild(textArea);
-  alert('Copied!');
 }
 </script>
 
