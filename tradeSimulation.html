@@ -157,7 +157,7 @@ Bersifat simulasi matematis, bukan hasil trading nyata. Gunakan sebagai referens
   <input id="wdPercent" type="number" value="50">
 
   <label>WD interval</label>
-  <input id="wdInterval" type="number" value="1">
+  <input id="wdInterval" type="number" value="3">
 
   <label>Leverage (x)</label>
   <input id="leverage" type="number" value="200">
@@ -203,6 +203,7 @@ function calculate() {
   let totalFee = 0;
   let totalWD = 0;
   let bufferProfit = 0;
+  let profitHistory = []; // Menyimpan history profit 3 terakhir
 
   let rows = "";
   let equity = [modalAwal];
@@ -216,22 +217,29 @@ function calculate() {
     const fee = (margin * lev) * (feeRoundPct / 100);
     const netProfit = grossProfit - fee;
 
-    // PROFIT SELALU MASUK MODAL (COMPOUND)
-    modalNow += netProfit;
-
-    // BUFFER HANYA CATATAN
+    // Profit masuk ke buffer
     bufferProfit += netProfit;
+    profitHistory.push(netProfit);
+
+    // Menjaga buffer hanya mencatat 3 profit terakhir
+    if (profitHistory.length > wdInt) {
+      profitHistory.shift();
+    }
 
     totalProfit += netProfit;
     totalFee += fee;
 
-    // WD SAAT INTERVAL
-    if (i % wdInt === 0 && bufferProfit > 0) {
-      const wd = bufferProfit * wdPct;
-      modalNow -= wd;
-      bufferProfit -= wd;
+    let wd = 0;
+    // WD dilakukan hanya pada 3 profit terakhir
+    if (i % wdInt === 0 && profitHistory.length === wdInt) {
+      // Hanya WD 50% dari 3 profit terakhir
+      const totalLast3Profit = profitHistory.reduce((acc, val) => acc + val, 0);
+      wd = totalLast3Profit * wdPct;
       totalWD += wd;
+      modalNow -= wd;
     }
+
+    modalNow += netProfit;  // Modal selalu dicompound dengan profit terbaru
 
     equity.push(modalNow);
     labels.push(i.toString());
