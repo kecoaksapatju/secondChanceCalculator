@@ -203,7 +203,7 @@ function calculate() {
   let totalProfit = 0;
   let totalFee = 0;
   let totalWD = 0;
-  let bufferProfit = 0;
+  let bufferProfit = 0;  // Buffer untuk profit yang dicompound
 
   let rows = "";
   let equity = [modalAwal];
@@ -217,16 +217,18 @@ function calculate() {
     const fee = (margin * lev) * (feeRoundPct / 100);
     const netProfit = grossProfit - fee;
 
-    bufferProfit += netProfit; // Masukkan profit ke buffer
+    // Akumulasi profit ke buffer
+    bufferProfit += netProfit;
     totalProfit += netProfit;
     totalFee += fee;
 
     let wd = 0;
+    // Setelah interval WD tercapai, tarik 50% profit dari buffer
     if (i % wdInt === 0) {
-      wd = bufferProfit * wdPct; // WD dari buffer profit
+      wd = bufferProfit * wdPct;  // WD dari profit buffer
       totalWD += wd;
-      modalNow += (bufferProfit - wd); // Sisanya masuk modal
-      bufferProfit = 0; // Reset buffer
+      modalNow += (bufferProfit - wd);  // Sisanya masuk modal
+      bufferProfit = 0;  // Reset buffer setelah WD
     }
 
     equity.push(modalNow);
