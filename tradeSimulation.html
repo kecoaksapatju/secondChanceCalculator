@@ -190,7 +190,6 @@ function calculate() {
   const profitPct = Number(profitPercent.value) / 100;
   const wdPct = Number(wdPercent.value) / 100;
   const wdInt = Number(wdInterval.value);
-
   const lev = Number(leverage.value);
 
   const feeRoundPct =
@@ -203,7 +202,7 @@ function calculate() {
   let totalProfit = 0;
   let totalFee = 0;
   let totalWD = 0;
-  let bufferProfit = 0;  // Buffer untuk profit yang dicompound
+  let bufferProfit = 0;
 
   let rows = "";
   let equity = [modalAwal];
@@ -217,20 +216,21 @@ function calculate() {
     const fee = (margin * lev) * (feeRoundPct / 100);
     const netProfit = grossProfit - fee;
 
-    // Masukkan profit trade ke buffer
-    bufferProfit += netProfit; 
+    // PROFIT SELALU MASUK MODAL (COMPOUND)
+    modalNow += netProfit;
+
+    // BUFFER HANYA CATATAN
+    bufferProfit += netProfit;
+
     totalProfit += netProfit;
     totalFee += fee;
 
-    let wd = 0;
-    // Setelah interval WD tercapai, WD 50% dari buffer
-    if (i % wdInt === 0) {
-      wd = bufferProfit * wdPct;  // WD dari profit buffer
+    // WD SAAT INTERVAL
+    if (i % wdInt === 0 && bufferProfit > 0) {
+      const wd = bufferProfit * wdPct;
+      modalNow -= wd;
+      bufferProfit -= wd;
       totalWD += wd;
-      modalNow += (bufferProfit - wd);  // Sisanya masuk modal
-      bufferProfit = 0;  // Mengurangi buffer profit setelah WD
-    } else {
-      modalNow += netProfit;  // Buffer profit dicompound untuk trade berikutnya
     }
 
     equity.push(modalNow);
