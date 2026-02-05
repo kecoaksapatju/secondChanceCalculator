@@ -218,7 +218,7 @@ function calculate() {
     const netProfit = grossProfit - fee;
 
     // Masukkan profit trade ke buffer
-    bufferProfit += netProfit;
+    bufferProfit += netProfit; 
     totalProfit += netProfit;
     totalFee += fee;
 
@@ -228,7 +228,7 @@ function calculate() {
       wd = bufferProfit * wdPct;  // WD dari profit buffer
       totalWD += wd;
       modalNow += (bufferProfit - wd);  // Sisanya masuk modal
-      bufferProfit = 0;  // Reset buffer setelah WD
+      bufferProfit -= wd;  // Mengurangi buffer setelah WD
     } else {
       modalNow += netProfit;  // Buffer profit dicompound untuk trade berikutnya
     }
