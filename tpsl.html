@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Take Profit & Stop Loss Calculator</title>
+<title>TP & SL Calculator</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -35,7 +35,6 @@ h2 {
   margin-right: auto;
 }
 
-/* ===== FORM ===== */
 label {
   display: block;
   font-size: 14px;
@@ -64,47 +63,38 @@ button {
   cursor: pointer;
 }
 
-/* ===== RESULT ===== */
 .result {
   margin-top: 12px;
   font-size: 14px;
   line-height: 1.6;
-}
-
-.info {
-  display: inline-block;
-  font-size: 14px;
-  color: #007bff;
-  cursor: pointer;
-  margin-left: 5px;
-}
-
-.info i {
-  font-size: 12px;
-  padding: 2px;
-  border-radius: 50%;
-  background-color: #007bff;
-  color: white;
 }
 </style>
 </head>
 
 <body>
 
-<h2>Take Profit & Stop Loss Calculator</h2>
+<h2>TP & SL Calculator</h2>
 
 <div class="card">
-  <label>Harga Entry <span class="info" onclick="alert('Masukkan harga entry di sini, contoh: 0.745709.')"><i>i</i></span></label>
-  <input id="entryPrice" type="number" placeholder="Masukkan harga entry" />
+  <label>
+    Harga Entry ⓘ
+  </label>
+  <input id="entryPrice" type="number" placeholder="Contoh: 0.745709">
 
-  <label>Target Profit (%) <span class="info" onclick="alert('Target profit adalah persentase keuntungan yang Anda harapkan, contoh: 80%.')"><i>i</i></span></label>
-  <input id="targetProfit" type="number" value="80" />
+  <label>
+    Target Profit (%) ⓘ
+  </label>
+  <input id="targetProfit" type="number" value="80">
 
-  <label>Target Loss (%) <span class="info" onclick="alert('Target loss adalah persentase kerugian yang Anda terima jika harga bergerak berlawanan, contoh: -600%.')"><i>i</i></span></label>
-  <input id="targetLoss" type="number" value="-600" />
+  <label>
+    Target Loss (%) ⓘ
+  </label>
+  <input id="targetLoss" type="number" value="-600">
 
-  <label>Leverage <span class="info" onclick="alert('Leverage adalah pengganda yang Anda gunakan untuk meningkatkan eksposur Anda pada pergerakan harga. Contoh: 200x.')"><i>i</i></span></label>
-  <input id="leverage" type="number" value="200" />
+  <label>
+    Leverage ⓘ
+  </label>
+  <input id="leverage" type="number" value="200">
 
   <button onclick="calculate()">Hitung</button>
 </div>
@@ -113,16 +103,30 @@ button {
 
 <script>
 function calculate() {
-  const entryPrice = parseFloat(document.getElementById("entryPrice").value);
-  const targetProfit = parseFloat(document.getElementById("targetProfit").value);
-  const targetLoss = parseFloat(document.getElementById("targetLoss").value);
-  const leverage = parseFloat(document.getElementById("leverage").value);
+  const entry = Number(document.getElementById("entryPrice").value);
+  const tpPct = Number(document.getElementById("targetProfit").value);
+  const slPct = Number(document.getElementById("targetLoss").value);
+  const lev = Number(document.getElementById("leverage").value);
 
-  if (isNaN(entryPrice) || entryPrice <= 0) {
-    alert("Masukkan harga entry yang valid.");
+  if (!entry || entry <= 0) {
+    alert("Harga entry belum diisi");
     return;
   }
 
-  // Hitung harga TP dan SL berdasarkan input
-  const targetProfitWithoutLeverage = targetProfit / leverage; // Keuntungan tanpa leverage
-  const targetLossWithoutLeverage = targetLoss / leverag
+  const tpMove = tpPct / lev / 100;
+  const slMove = slPct / lev / 100;
+
+  const tpPrice = entry * (1 + tpMove);
+  const slPrice = entry * (1 + slMove);
+
+  document.getElementById("result").innerHTML = `
+    <div class="card">
+      <strong>Harga TP:</strong> ${tpPrice.toFixed(6)}<br>
+      <strong>Harga SL:</strong> ${slPrice.toFixed(6)}
+    </div>
+  `;
+}
+</script>
+
+</body>
+</html>
