@@ -1,114 +1,128 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kalkulator Take Profit & Stop Loss</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-      background-color: #f5f5f5;
-      color: #333;
-    }
-    .container {
-      max-width: 600px;
-      margin: 0 auto;
-      background-color: #fff;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    }
-    input[type="number"], input[type="text"], button {
-      width: 100%;
-      padding: 10px;
-      margin-bottom: 10px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      font-size: 16px;
-    }
-    button {
-      background-color: #28a745;
-      color: white;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #218838;
-    }
-    .result {
-      margin-top: 20px;
-      padding: 10px;
-      background-color: #e9f7e9;
-      border: 1px solid #d4e9d4;
-      border-radius: 4px;
-    }
-    .info {
-      display: inline-block;
-      font-size: 14px;
-      color: #007bff;
-      cursor: pointer;
-      margin-left: 5px;
-    }
-    .info i {
-      font-size: 12px;
-      padding: 2px;
-      border-radius: 50%;
-      background-color: #007bff;
-      color: white;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>Take Profit & Stop Loss Calculator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  background: #0f172a;
+  color: #e5e7eb;
+  padding: 16px;
+  margin: 0;
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.card {
+  background: #020617;
+  padding: 16px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  max-width: 520px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ===== FORM ===== */
+label {
+  display: block;
+  font-size: 14px;
+  margin-top: 12px;
+}
+
+input {
+  width: 100%;
+  padding: 12px;
+  margin-top: 4px;
+  font-size: 16px;
+  border-radius: 8px;
+  border: none;
+}
+
+button {
+  margin-top: 16px;
+  width: 100%;
+  padding: 14px;
+  font-size: 18px;
+  font-weight: bold;
+  border-radius: 10px;
+  border: none;
+  background: #22c55e;
+  color: #022c22;
+  cursor: pointer;
+}
+
+/* ===== RESULT ===== */
+.result {
+  margin-top: 12px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.info {
+  display: inline-block;
+  font-size: 14px;
+  color: #007bff;
+  cursor: pointer;
+  margin-left: 5px;
+}
+
+.info i {
+  font-size: 12px;
+  padding: 2px;
+  border-radius: 50%;
+  background-color: #007bff;
+  color: white;
+}
+</style>
 </head>
+
 <body>
 
-  <div class="container">
-    <h1>Kalkulator Take Profit & Stop Loss</h1>
+<h2>Take Profit & Stop Loss Calculator</h2>
 
-    <label for="entryPrice">Harga Entry <span class="info" onclick="alert('Masukkan harga entry di sini, contoh: 0.745709.')"><i>i</i></span></label>
-    <input type="number" id="entryPrice" placeholder="Masukkan harga entry" />
+<div class="card">
+  <label>Harga Entry <span class="info" onclick="alert('Masukkan harga entry di sini, contoh: 0.745709.')"><i>i</i></span></label>
+  <input id="entryPrice" type="number" placeholder="Masukkan harga entry" />
 
-    <label for="targetProfit">Target Profit (%) <span class="info" onclick="alert('Target profit adalah persentase keuntungan yang Anda harapkan, contoh: 80%.')"><i>i</i></span></label>
-    <input type="number" id="targetProfit" value="80" />
+  <label>Target Profit (%) <span class="info" onclick="alert('Target profit adalah persentase keuntungan yang Anda harapkan, contoh: 80%.')"><i>i</i></span></label>
+  <input id="targetProfit" type="number" value="80" />
 
-    <label for="targetLoss">Target Loss (%) <span class="info" onclick="alert('Target loss adalah persentase kerugian yang Anda terima jika harga bergerak berlawanan, contoh: -600%.')"><i>i</i></span></label>
-    <input type="number" id="targetLoss" value="-600" />
+  <label>Target Loss (%) <span class="info" onclick="alert('Target loss adalah persentase kerugian yang Anda terima jika harga bergerak berlawanan, contoh: -600%.')"><i>i</i></span></label>
+  <input id="targetLoss" type="number" value="-600" />
 
-    <label for="leverage">Leverage <span class="info" onclick="alert('Leverage adalah pengganda yang Anda gunakan untuk meningkatkan eksposur Anda pada pergerakan harga. Contoh: 200x.')"><i>i</i></span></label>
-    <input type="number" id="leverage" value="200" />
+  <label>Leverage <span class="info" onclick="alert('Leverage adalah pengganda yang Anda gunakan untuk meningkatkan eksposur Anda pada pergerakan harga. Contoh: 200x.')"><i>i</i></span></label>
+  <input id="leverage" type="number" value="200" />
 
-    <button onclick="calculate()">Hitung</button>
+  <button onclick="calculate()">Hitung</button>
+</div>
 
-    <div class="result" id="result">
-      <p><strong>Harga TP: </strong><span id="resultTP">-</span></p>
-      <p><strong>Harga SL: </strong><span id="resultSL">-</span></p>
-    </div>
-  </div>
+<div id="result" class="result"></div>
 
-  <script>
-    function calculate() {
-      const entryPrice = parseFloat(document.getElementById("entryPrice").value);
-      const targetProfit = parseFloat(document.getElementById("targetProfit").value);
-      const targetLoss = parseFloat(document.getElementById("targetLoss").value);
-      const leverage = parseFloat(document.getElementById("leverage").value);
+<script>
+function calculate() {
+  const entryPrice = parseFloat(document.getElementById("entryPrice").value);
+  const targetProfit = parseFloat(document.getElementById("targetProfit").value);
+  const targetLoss = parseFloat(document.getElementById("targetLoss").value);
+  const leverage = parseFloat(document.getElementById("leverage").value);
 
-      if (isNaN(entryPrice) || entryPrice <= 0) {
-        alert("Masukkan harga entry yang valid.");
-        return;
-      }
+  if (isNaN(entryPrice) || entryPrice <= 0) {
+    alert("Masukkan harga entry yang valid.");
+    return;
+  }
 
-      // Hitung harga TP dan SL berdasarkan input
-      const targetProfitWithoutLeverage = targetProfit / leverage; // Keuntungan tanpa leverage
-      const targetLossWithoutLeverage = targetLoss / leverage; // Kerugian tanpa leverage
-
-      // Harga Take Profit
-      const TP = entryPrice * (1 + targetProfitWithoutLeverage / 100);
-      // Harga Stop Loss
-      const SL = entryPrice * (1 + targetLossWithoutLeverage / 100);
-
-      // Tampilkan hasil
-      document.getElementById("resultTP").textContent = TP.toFixed(6);
-      document.getElementById("resultSL").textContent = SL.toFixed(6);
-    }
-  </script>
-
-</body>
-</html>
+  // Hitung harga TP dan SL berdasarkan input
+  const targetProfitWithoutLeverage = targetProfit / leverage; // Keuntungan tanpa leverage
+  const targetLossWithoutLeverage = targetLoss / leverag
