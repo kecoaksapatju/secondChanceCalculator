@@ -35,6 +35,7 @@ h2 {
   margin-right: auto;
 }
 
+/* ===== FORM ===== */
 label {
   display: block;
   font-size: 14px;
@@ -68,6 +69,38 @@ button {
   font-size: 14px;
   line-height: 1.6;
 }
+
+/* ===== Deskripsi Keterangan ===== */
+.description {
+  font-size: 12px;
+  font-style: italic;
+  color: #a1a1a1;
+  margin-top: -8px;
+  text-align: center;
+}
+
+/* ===== Hasil ===== */
+.result-box {
+  background-color: #1e293b;
+  padding: 16px;
+  border-radius: 8px;
+  text-align: center;
+  margin-top: 12px;
+}
+
+.result-box p {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.result-box .value {
+  font-size: 26px;
+  color: #22c55e;
+  margin-top: 8px;
+  padding: 8px;
+  border-radius: 4px;
+  background-color: #333;
+}
 </style>
 </head>
 
@@ -75,25 +108,21 @@ button {
 
 <h2>TP & SL Calculator</h2>
 
+<div class="description">
+  <p>Masukkan harga entry, target profit, target loss, dan leverage untuk menghitung harga Take Profit (TP) dan Stop Loss (SL). Semua input menggunakan persentase (%) kecuali harga entry.</p>
+</div>
+
 <div class="card">
-  <label>
-    Harga Entry ⓘ
-  </label>
+  <label>Harga Entry</label>
   <input id="entryPrice" type="number" placeholder="Contoh: 0.745709">
 
-  <label>
-    Target Profit (%) ⓘ
-  </label>
+  <label>Target Profit (%)</label>
   <input id="targetProfit" type="number" value="80">
 
-  <label>
-    Target Loss (%) ⓘ
-  </label>
+  <label>Target Loss (%)</label>
   <input id="targetLoss" type="number" value="-600">
 
-  <label>
-    Leverage ⓘ
-  </label>
+  <label>Leverage</label>
   <input id="leverage" type="number" value="200">
 
   <button onclick="calculate()">Hitung</button>
@@ -120,9 +149,12 @@ function calculate() {
   const slPrice = entry * (1 + slMove);
 
   document.getElementById("result").innerHTML = `
-    <div class="card">
-      <strong>Harga TP:</strong> ${tpPrice.toFixed(6)}<br>
-      <strong>Harga SL:</strong> ${slPrice.toFixed(6)}
+    <div class="result-box">
+      <p>Harga Take Profit (TP)</p>
+      <div class="value">${tpPrice.toFixed(6)}</div>
+
+      <p>Harga Stop Loss (SL)</p>
+      <div class="value">${slPrice.toFixed(6)}</div>
     </div>
   `;
 }
