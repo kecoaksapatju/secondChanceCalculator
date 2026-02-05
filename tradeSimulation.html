@@ -217,18 +217,20 @@ function calculate() {
     const fee = (margin * lev) * (feeRoundPct / 100);
     const netProfit = grossProfit - fee;
 
-    // Akumulasi profit ke buffer
+    // Masukkan profit trade ke buffer
     bufferProfit += netProfit;
     totalProfit += netProfit;
     totalFee += fee;
 
     let wd = 0;
-    // Setelah interval WD tercapai, tarik 50% profit dari buffer
+    // Setelah interval WD tercapai, WD 50% dari buffer
     if (i % wdInt === 0) {
       wd = bufferProfit * wdPct;  // WD dari profit buffer
       totalWD += wd;
       modalNow += (bufferProfit - wd);  // Sisanya masuk modal
       bufferProfit = 0;  // Reset buffer setelah WD
+    } else {
+      modalNow += netProfit;  // Buffer profit dicompound untuk trade berikutnya
     }
 
     equity.push(modalNow);
