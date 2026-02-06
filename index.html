@@ -2,27 +2,29 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>TP & SL Calculator</title>
+<title>SecondChance Compound Calculator</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <style>
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
+*, *::before, *::after { box-sizing: border-box; }
 
 body {
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   background: #0f172a;
   color: #e5e7eb;
-  padding: 16px;
   margin: 0;
+  padding: 16px;
 }
 
-h2 {
+h2 { text-align: center; margin-bottom: 6px; }
+
+.intro {
   text-align: center;
-  margin-bottom: 12px;
+  font-size: 13px;
+  color: #cbd5f5;
+  margin-bottom: 16px;
 }
 
 .card {
@@ -30,29 +32,25 @@ h2 {
   padding: 16px;
   border-radius: 12px;
   margin-bottom: 16px;
-  max-width: 520px;
-  margin-left: auto;
-  margin-right: auto;
 }
 
-/* ===== FORM ===== */
 label {
-  display: block;
   font-size: 14px;
+  display: block;
   margin-top: 12px;
 }
 
 input {
   width: 100%;
   padding: 12px;
-  margin-top: 4px;
   font-size: 16px;
   border-radius: 8px;
   border: none;
+  margin-top: 4px;
 }
 
 button {
-  margin-top: 16px;
+  margin-top: 18px;
   width: 100%;
   padding: 14px;
   font-size: 18px;
@@ -61,104 +59,284 @@ button {
   border: none;
   background: #22c55e;
   color: #022c22;
-  cursor: pointer;
 }
 
-.result {
-  margin-top: 12px;
-  font-size: 14px;
-  line-height: 1.6;
-}
-
-/* ===== Deskripsi Keterangan ===== */
-.description {
-  font-size: 12px;
-  font-style: italic;
-  color: #a1a1a1;
-  margin-top: -8px;
+/* ===== SUMMARY ===== */
+.summary-title {
   text-align: center;
-}
-
-/* ===== Hasil ===== */
-.result-box {
-  background-color: #020617; /* Same as the top box */
-  padding: 12px;
-  border-radius: 8px;
-  text-align: center;
-  margin-top: 8px; /* Reduced spacing */
-}
-
-.result-box p {
-  font-size: 16px; /* Adjusted font size */
   font-weight: bold;
-  color: #e5e7eb; /* Light text color */
-  margin-bottom: 4px; /* Reduced spacing between title and value */
+  letter-spacing: 1px;
+  margin-bottom: 12px;
 }
 
-.result-box .value {
-  font-size: 18px; /* Smaller font size */
-  color: #000; /* Changed to black text */
-  padding: 6px;
-  border-radius: 4px;
-  background-color: #fff; /* White background for value box */
-  border: 1px solid #ccc; /* Light border for the value box */
+.summary-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
 }
+
+.summary-box {
+  background: #020617;
+  padding: 14px;
+  border-radius: 10px;
+  border: 1px solid #1e293b;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+
+.summary-row span:last-child { font-weight: bold; }
+
+@media (min-width: 640px) {
+  .summary-grid { grid-template-columns: 1fr 1fr; }
+}
+
+/* ===== INFO BAR ===== */
+.info-bar {
+  margin-top: 12px;
+  padding: 10px 12px;
+  font-size: 13px;
+  background: #020617;
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+}
+
+/* ===== CHART ===== */
+.chart-wrapper {
+  margin-top: 20px;
+  height: 260px;
+}
+
+/* ===== TABLE ===== */
+.table-wrapper {
+  margin-top: 20px;
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  min-width: 600px;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+th, td {
+  border: 1px solid #334155;
+  padding: 8px;
+  text-align: right;
+}
+
+th { background: #1e293b; }
+td:first-child, th:first-child { text-align: center; }
 </style>
 </head>
 
 <body>
 
-<h2>TP & SL Calculator</h2>
-
-<div class="description">
-  <p>Masukkan harga entry, target profit, target loss, dan leverage untuk menghitung harga Take Profit (TP) dan Stop Loss (SL).</p>
+<h2>SecondChance Calculator</h2>
+<div class="intro">
+ⓘ Kalkulator ini mensimulasikan dampak rata-rata win per trade terhadap pertumbuhan modal, profit, fee, dan ROI.
+Bersifat simulasi matematis, bukan hasil trading nyata. Gunakan sebagai referensi dan lakukan trading dengan hati-hati.
 </div>
 
 <div class="card">
-  <label>Harga Entry</label>
-  <input id="entryPrice" type="number" placeholder="Contoh: 0.745709">
+  <label>Modal Awal ($)</label>
+  <input id="modal" type="number" value="100">
 
-  <label>Target Profit (%)</label>
-  <input id="targetProfit" type="number" value="80">
+  <label>Alokasi Posisi (% dari modal)</label>
+  <input id="posPercent" type="number" value="5">
 
-  <label>Target Loss (%)</label>
-  <input id="targetLoss" type="number" value="-600">
+  <label>Profit per Trade (% dari posisi)</label>
+  <input id="profitPercent" type="number" value="50">
 
-  <label>Leverage</label>
+  <label>WD Profit/Trade (%)</label>
+  <input id="wdPercent" type="number" value="50">
+
+  <label>WD interval</label>
+  <input id="wdInterval" type="number" value="3">
+
+  <label>Leverage (x)</label>
   <input id="leverage" type="number" value="200">
+
+  <label>Fee Beli (%)</label>
+  <input id="feeBuy" type="number" value="0.04">
+
+  <label>Fee Jual (%)</label>
+  <input id="feeSell" type="number" value="0.04">
+
+  <label>Funding Fee (%)</label>
+  <input id="fundingFee" type="number" value="0">
+
+  <label>Jumlah Trade</label>
+  <input id="loops" type="number" value="60">
 
   <button onclick="calculate()">Hitung</button>
 </div>
 
-<div id="result" class="result"></div>
+<div id="result"></div>
 
 <script>
-function calculate() {
-  const entry = Number(document.getElementById("entryPrice").value);
-  const tpPct = Number(document.getElementById("targetProfit").value);
-  const slPct = Number(document.getElementById("targetLoss").value);
-  const lev = Number(document.getElementById("leverage").value);
+let equityChart = null;
 
-  if (!entry || entry <= 0) {
-    alert("Harga entry belum diisi");
-    return;
+function calculate() {
+  const modalAwal = Number(modal.value);
+  let modalNow = modalAwal;
+
+  const posPct = Number(posPercent.value) / 100;
+  const profitPct = Number(profitPercent.value) / 100;
+  const wdPct = Number(wdPercent.value) / 100;
+  const wdInt = Number(wdInterval.value);
+  const lev = Number(leverage.value);
+
+  const feeRoundPct =
+    Number(feeBuy.value) +
+    Number(feeSell.value) +
+    Number(fundingFee.value);
+
+  const trades = Number(loops.value);
+
+  let totalProfit = 0;
+  let totalFee = 0;
+  let totalWD = 0;
+  let bufferProfit = 0;
+  let profitHistory = []; // Menyimpan history profit 3 terakhir
+
+  let rows = "";
+  let equity = [modalAwal];
+  let labels = ["0"];
+
+  for (let i = 1; i <= trades; i++) {
+    const modalBefore = modalNow;
+    const margin = modalBefore * posPct;
+
+    const grossProfit = margin * profitPct;
+    const fee = (margin * lev) * (feeRoundPct / 100);
+    const netProfit = grossProfit - fee;
+
+    // Profit masuk ke buffer
+    bufferProfit += netProfit;
+    profitHistory.push(netProfit);
+
+    // Menjaga buffer hanya mencatat 3 profit terakhir
+    if (profitHistory.length > wdInt) {
+      profitHistory.shift();
+    }
+
+    totalProfit += netProfit;
+    totalFee += fee;
+
+    let wd = 0;
+    // WD dilakukan hanya pada 3 profit terakhir
+    if (i % wdInt === 0 && profitHistory.length === wdInt) {
+      // Hanya WD 50% dari 3 profit terakhir
+      const totalLast3Profit = profitHistory.reduce((acc, val) => acc + val, 0);
+      wd = totalLast3Profit * wdPct;
+      totalWD += wd;
+      modalNow -= wd;
+    }
+
+    modalNow += netProfit;  // Modal selalu dicompound dengan profit terbaru
+
+    equity.push(modalNow);
+    labels.push(i.toString());
+
+    rows += `
+      <tr>
+        <td>${i}</td>
+        <td>${modalBefore.toFixed(2)}</td>
+        <td>${margin.toFixed(2)}</td>
+        <td>${netProfit.toFixed(2)}</td>
+        <td>${fee.toFixed(2)}</td>
+        <td>${modalNow.toFixed(2)}</td>
+      </tr>`;
   }
 
-  const tpMove = tpPct / lev / 100;
-  const slMove = slPct / lev / 100;
-
-  const tpPrice = entry * (1 + tpMove);
-  const slPrice = entry * (1 + slMove);
+  const roi = (totalProfit / modalAwal) * 100;
+  const avgProfit = totalProfit / trades;
+  const lossLimitPct = feeRoundPct * lev;
 
   document.getElementById("result").innerHTML = `
-    <div class="result-box">
-      <p>Harga Take Profit (TP)</p>
-      <div class="value">${tpPrice.toFixed(6)}</div>
+  <div class="card">
+    <div class="summary-title">SUMMARY</div>
 
-      <p>Harga Stop Loss (SL)</p>
-      <div class="value">${slPrice.toFixed(6)}</div>
+    <div class="summary-grid">
+      <div class="summary-box">
+        <div class="summary-row"><span>Modal awal</span><span>$${modalAwal.toFixed(2)}</span></div>
+        <div class="summary-row"><span>Posisi per trade</span><span>${(posPct*100).toFixed(2)}%</span></div>
+        <div class="summary-row"><span>Profit per trade</span><span>${(profitPct*100).toFixed(2)}%</span></div>
+        <div class="summary-row"><span>WD Profit/Trade</span><span>${(wdPct*100).toFixed(2)}%</span></div>
+        <div class="summary-row"><span>WD interval</span><span>${wdInt}</span></div>
+        <div class="summary-row"><span>Leverage</span><span>${lev}x</span></div>
+        <div class="summary-row"><span>Fee round trip</span><span>${feeRoundPct.toFixed(2)}%</span></div>
+        <div class="summary-row"><span>Jumlah trade</span><span>${trades}</span></div>
+      </div>
+
+      <div class="summary-box">
+        <div class="summary-row"><span>Modal akhir</span><span>$${modalNow.toFixed(2)}</span></div>
+        <div class="summary-row"><span>Total profit</span><span>$${totalProfit.toFixed(2)}</span></div>
+        <div class="summary-row"><span>Total fee</span><span>$${totalFee.toFixed(2)}</span></div>
+        <div class="summary-row"><span>Total WD</span><span>$${totalWD.toFixed(2)}</span></div>
+        <div class="summary-row"><span>ROI total</span><span>${roi.toFixed(1)}%</span></div>
+        <div class="summary-row"><span>Avg profit/trade</span><span>$${avgProfit.toFixed(2)}</span></div>
+      </div>
     </div>
-  `;
+
+    <div class="info-bar">
+      Selama profit per trade ≥ ${lossLimitPct.toFixed(2)}% dari margin, trade TIDAK akan rugi secara matematis. (Rumus: Fee × Leverage)
+    </div>
+
+    <div class="chart-wrapper">
+      <canvas id="equityChart"></canvas>
+    </div>
+
+    <div class="table-wrapper">
+      <table>
+        <tr>
+          <th>#</th>
+          <th>Modal</th>
+          <th>Margin</th>
+          <th>Profit</th>
+          <th>Fee</th>
+          <th>Total</th>
+        </tr>
+        ${rows}
+      </table>
+    </div>
+  </div>`;
+
+  drawChart(labels, equity);
+}
+
+function drawChart(labels, data) {
+  const ctx = document.getElementById("equityChart");
+  if (equityChart) equityChart.destroy();
+
+  equityChart = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels,
+      datasets: [{
+        data,
+        borderColor: "#22c55e",
+        backgroundColor: "rgba(34,197,94,0.15)",
+        tension: 0.25,
+        fill: true
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { title: { display: true, text: "Trade" } },
+        y: { title: { display: true, text: "Modal ($)" } }
+      }
+    }
+  });
 }
 </script>
 
