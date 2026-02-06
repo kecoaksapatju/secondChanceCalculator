@@ -95,7 +95,7 @@ button {
   outline: 3px solid #e5e7eb;
 }
 
-/* ===== CHECKBOX (FIX ASLI) ===== */
+/* ===== CHECKBOX ===== */
 .checkbox-container {
   margin-top: 12px;
   display: flex;
@@ -111,7 +111,7 @@ button {
 }
 
 .checkbox-label input {
-  width: auto;      /* 🔥 FIX PENTING */
+  width: auto;
   margin: 0;
 }
 
@@ -137,6 +137,7 @@ button {
   border-radius: 4px;
   background-color: #fff;
   border: 1px solid #ccc;
+  cursor: pointer;
 }
 </style>
 </head>
@@ -218,11 +219,23 @@ function calculate() {
   result.innerHTML = `
     <div class="result-box">
       <p>Harga Take Profit (TP)</p>
-      <div class="value" onclick="navigator.clipboard.writeText('${tpFinal.toFixed(6)}')">${tpFinal.toFixed(6)}</div>
+      <div class="value" onclick="copyToClipboard('${tpFinal.toFixed(6)}')">${tpFinal.toFixed(6)}</div>
       <p>Harga Stop Loss (SL)</p>
-      <div class="value" onclick="navigator.clipboard.writeText('${slFinal.toFixed(6)}')">${slFinal.toFixed(6)}</div>
+      <div class="value" onclick="copyToClipboard('${slFinal.toFixed(6)}')">${slFinal.toFixed(6)}</div>
     </div>
   `;
+}
+
+/* ===== COPY FIX (iOS SAFE) ===== */
+function copyToClipboard(value) {
+  const tempInput = document.createElement("input");
+  tempInput.value = value;
+  document.body.appendChild(tempInput);
+  tempInput.select();
+  tempInput.setSelectionRange(0, 99999);
+  document.execCommand("copy");
+  document.body.removeChild(tempInput);
+  alert(`Harga ${value} sudah tercopy ke clipboard!`);
 }
 </script>
 
