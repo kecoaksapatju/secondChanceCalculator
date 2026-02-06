@@ -64,6 +64,15 @@ button {
   cursor: pointer;
 }
 
+/* ===== DESKRIPSI (ASLI) ===== */
+.description {
+  font-size: 12px;
+  font-style: italic;
+  color: #a1a1a1;
+  margin-top: -8px;
+  text-align: center;
+}
+
 /* ===== BUY / SELL ===== */
 .trade-selector {
   display: flex;
@@ -146,6 +155,12 @@ button {
 
 <h2>TP & SL Calculator</h2>
 
+<div class="description">
+  <p>
+    Tentukan BUY/SELL, masukkan harga entry, target profit, target loss, dan leverage untuk menghitung harga Take Profit (TP) dan Stop Loss (SL).
+  </p>
+</div>
+
 <div class="card">
   <div class="trade-selector">
     <div class="trade-box buy" onclick="selectTrade('long')">BUY/LONG</div>
@@ -226,7 +241,7 @@ function calculate() {
   `;
 }
 
-/* ===== COPY FIX (iOS SAFE) ===== */
+/* ===== COPY (iOS SAFE) ===== */
 function copyToClipboard(value) {
   const tempInput = document.createElement("input");
   tempInput.value = value;
