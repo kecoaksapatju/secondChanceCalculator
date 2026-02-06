@@ -35,7 +35,6 @@ h2 {
   margin-right: auto;
 }
 
-/* ===== FORM ===== */
 label {
   display: block;
   font-size: 14px;
@@ -64,47 +63,29 @@ button {
   cursor: pointer;
 }
 
-.result {
-  margin-top: 12px;
-  font-size: 14px;
-  line-height: 1.6;
-}
-
-/* ===== Deskripsi Keterangan ===== */
-.description {
-  font-size: 12px;
-  font-style: italic;
-  color: #a1a1a1;
-  margin-top: -8px;
-  text-align: center;
-}
-
-/* ===== Hasil ===== */
 .result-box {
-  background-color: #020617; /* Same as the top box */
+  background-color: #020617;
   padding: 12px;
   border-radius: 8px;
   text-align: center;
-  margin-top: 8px; /* Reduced spacing */
+  margin-top: 8px;
 }
 
 .result-box p {
-  font-size: 16px; /* Adjusted font size */
+  font-size: 16px;
   font-weight: bold;
-  color: #e5e7eb; /* Light text color */
-  margin-bottom: 4px; /* Reduced spacing between title and value */
+  margin-bottom: 4px;
 }
 
 .result-box .value {
-  font-size: 18px; /* Smaller font size */
-  color: #000; /* Changed to black text */
+  font-size: 18px;
+  color: #000;
   padding: 6px;
   border-radius: 4px;
-  background-color: #fff; /* White background for value box */
-  border: 1px solid #ccc; /* Light border for the value box */
+  background-color: #fff;
+  border: 1px solid #ccc;
 }
 
-/* ===== Kotak BUY dan SELL ===== */
 .trade-selector {
   display: flex;
   justify-content: space-between;
@@ -122,17 +103,15 @@ button {
 }
 
 .buy {
-  background-color: #22c55e; /* Green */
-  color: #022c22;
+  background-color: #22c55e;
 }
 
 .sell {
-  background-color: #ef4444; /* Red */
-  color: #022c22;
+  background-color: #ef4444;
 }
 
 .selected {
-  outline: 3px solid #e5e7eb; /* Highlighted border */
+  outline: 3px solid #e5e7eb;
 }
 
 .checkbox-container {
@@ -146,18 +125,14 @@ button {
 
 <h2>TP & SL Calculator</h2>
 
-<div class="description">
-  <p>Tentukan BUY/SELL, masukkan harga entry, target profit, target loss, dan leverage untuk menghitung harga Take Profit (TP) dan Stop Loss (SL).</p>
-</div>
-
 <div class="card">
   <div class="trade-selector">
-    <div class="trade-box buy" onclick="selectTrade('long')">BUY/LONG</div>
-    <div class="trade-box sell" onclick="selectTrade('short')">SELL/SHORT</div>
+    <div class="trade-box buy" onclick="selectTrade('long')">BUY / LONG</div>
+    <div class="trade-box sell" onclick="selectTrade('short')">SELL / SHORT</div>
   </div>
 
   <label>Harga Entry</label>
-  <input id="entryPrice" type="number" placeholder="Contoh: 0.745709">
+  <input id="entryPrice" type="number">
 
   <label>Target Profit (%)</label>
   <input id="targetProfit" type="number" value="80">
@@ -168,7 +143,6 @@ button {
   <label>Leverage</label>
   <input id="leverage" type="number" value="200">
 
-  <!-- Checkbox for Nett -->
   <div class="checkbox-container">
     <input type="checkbox" id="includeFee" checked>
     <label for="includeFee">Nett (include fee 0.08%)</label>
@@ -177,84 +151,58 @@ button {
   <button onclick="calculate()">Hitung</button>
 </div>
 
-<div id="result" class="result"></div>
+<div id="result"></div>
 
 <script>
-let selectedTrade = null; // Variabel untuk menyimpan tipe trade yang dipilih
+let selectedTrade = null;
+const fee = 0.0008;
 
 function selectTrade(type) {
-  selectedTrade = type; // Menyimpan pilihan trade yang dipilih
-  
-  // Menghapus outline dari kedua kotak
+  selectedTrade = type;
   document.querySelector('.buy').classList.remove('selected');
   document.querySelector('.sell').classList.remove('selected');
-  
-  // Menambahkan outline ke kotak yang dipilih
-  if (type === 'long') {
-    document.querySelector('.buy').classList.add('selected');
-  } else if (type === 'short') {
-    document.querySelector('.sell').classList.add('selected');
-  }
+  document.querySelector(type === 'long' ? '.buy' : '.sell').classList.add('selected');
 }
 
 function calculate() {
-  const entry = Number(document.getElementById("entryPrice").value);
-  const tpPct = Number(document.getElementById("targetProfit").value);
-  const slPct = Number(document.getElementById("targetLoss").value);
-  const lev = Number(document.getElementById("leverage").value);
-  const includeFee = document.getElementById("includeFee").checked; // Cek apakah checkbox "Nett" dicentang
+  const entry = Number(entryPrice.value);
+  const tpPct = Number(targetProfit.value);
+  const slPct = Number(targetLoss.value);
+  const lev = Number(leverage.value);
+  const nett = includeFee.checked;
 
-  if (!entry || entry <= 0) {
-    alert("Harga entry belum diisi");
-    return;
-  }
-  
-  if (!selectedTrade) {
-    alert("Pilih terlebih dahulu jenis trade (BUY/LONG atau SELL/SHORT)");
+  if (!entry || !selectedTrade) {
+    alert("Lengkapi input & pilih posisi");
     return;
   }
 
   const tpMove = tpPct / lev / 100;
   const slMove = slPct / lev / 100;
 
-  let tpPrice, slPrice;
-  let tpNetto, slNetto;
+  let tpIdeal, slIdeal, tpFinal, slFinal;
 
   if (selectedTrade === "long") {
-    tpPrice = entry * (1 + tpMove);
-    slPrice = entry * (1 + slMove);
-  } else if (selectedTrade === "short") {
-    tpPrice = entry * (1 - tpMove);
-    slPrice = entry * (1 - slMove);
-  }
+    tpIdeal = entry * (1 + tpMove);
+    slIdeal = entry * (1 + slMove);
 
-  // Fee per sisi (buy 0.04% dan sell 0.04%), total roundtrip 0.08%
-  const feeRate = 0.0008; // 0.08% total roundtrip fee
-  
-  // Jika checkbox "Nett" dicentang, hitung harga TP/SL netto
-  if (includeFee) {
-    tpNetto = tpPrice / (1 - feeRate);  // Mencari harga yang sudah mempertimbangkan fee
-    slNetto = slPrice / (1 + feeRate);  // Mencari harga SL dengan fee
+    tpFinal = nett ? tpIdeal / (1 - fee) : tpIdeal;
+    slFinal = nett ? slIdeal / (1 + fee) : slIdeal;
   } else {
-    tpNetto = tpPrice;  // Tanpa fee
-    slNetto = slPrice;  // Tanpa fee
+    tpIdeal = entry * (1 - tpMove);
+    slIdeal = entry * (1 - slMove);
+
+    tpFinal = nett ? tpIdeal * (1 - fee) : tpIdeal;
+    slFinal = nett ? slIdeal * (1 + fee) : slIdeal;
   }
 
-  document.getElementById("result").innerHTML = `
+  result.innerHTML = `
     <div class="result-box">
-      <p>Harga Take Profit (TP) ${includeFee ? 'Setelah Fee' : 'Ideal'}</p>
-      <div class="value" onclick="copyToClipboard('${tpNetto.toFixed(6)}')">${tpNetto.toFixed(6)}</div>
-
-      <p>Harga Stop Loss (SL) ${includeFee ? 'Setelah Fee' : 'Ideal'}</p>
-      <div class="value" onclick="copyToClipboard('${slNetto.toFixed(6)}')">${slNetto.toFixed(6)}</div>
+      <p>Take Profit</p>
+      <div class="value">${tpFinal.toFixed(6)}</div>
+      <p>Stop Loss</p>
+      <div class="value">${slFinal.toFixed(6)}</div>
     </div>
   `;
-}
-
-function copyToClipboard(value) {
-  navigator.clipboard.writeText(value).then(() => {
-    alert(`Harga ${value} sudah tercopy ke clipboard!`);
-  });
 }
 </script>
 
