@@ -124,6 +124,10 @@ button {
 .checkbox-container input {
   margin-right: 8px;
 }
+
+.checkbox-container label {
+  white-space: nowrap; /* Prevent wrapping */
+}
 </style>
 </head>
 
@@ -138,7 +142,7 @@ button {
   </div>
 
   <label>Harga Entry</label>
-  <input id="entryPrice" type="number">
+  <input id="entryPrice" type="number" placeholder="Contoh: 0.745709">
 
   <label>Target Profit (%)</label>
   <input id="targetProfit" type="number" value="80">
