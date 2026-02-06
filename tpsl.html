@@ -116,7 +116,13 @@ button {
 
 .checkbox-container {
   margin-top: 12px;
-  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.checkbox-container input {
+  margin-right: 8px;
 }
 </style>
 </head>
@@ -198,11 +204,19 @@ function calculate() {
   result.innerHTML = `
     <div class="result-box">
       <p>Take Profit</p>
-      <div class="value">${tpFinal.toFixed(6)}</div>
+      <div class="value" onclick="copyToClipboard('${tpFinal.toFixed(6)}')">${tpFinal.toFixed(6)}</div>
       <p>Stop Loss</p>
-      <div class="value">${slFinal.toFixed(6)}</div>
+      <div class="value" onclick="copyToClipboard('${slFinal.toFixed(6)}')">${slFinal.toFixed(6)}</div>
     </div>
   `;
+}
+
+function copyToClipboard(value) {
+  navigator.clipboard.writeText(value).then(() => {
+    alert(`Harga ${value} sudah tercopy ke clipboard!`);
+  }).catch((err) => {
+    alert("Gagal menyalin ke clipboard: " + err);
+  });
 }
 </script>
 
