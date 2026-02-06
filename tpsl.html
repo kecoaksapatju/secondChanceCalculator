@@ -134,6 +134,11 @@ button {
 .selected {
   outline: 3px solid #e5e7eb; /* Highlighted border */
 }
+
+.checkbox-container {
+  margin-top: 12px;
+  text-align: center;
+}
 </style>
 </head>
 
@@ -163,6 +168,12 @@ button {
   <label>Leverage</label>
   <input id="leverage" type="number" value="200">
 
+  <!-- Checkbox for Nett -->
+  <div class="checkbox-container">
+    <input type="checkbox" id="includeFee" checked>
+    <label for="includeFee">Nett (include fee 0.08%)</label>
+  </div>
+
   <button onclick="calculate()">Hitung</button>
 </div>
 
@@ -191,6 +202,7 @@ function calculate() {
   const tpPct = Number(document.getElementById("targetProfit").value);
   const slPct = Number(document.getElementById("targetLoss").value);
   const lev = Number(document.getElementById("leverage").value);
+  const includeFee = document.getElementById("includeFee").checked; // Cek apakah checkbox "Nett" dicentang
 
   if (!entry || entry <= 0) {
     alert("Harga entry belum diisi");
@@ -206,6 +218,7 @@ function calculate() {
   const slMove = slPct / lev / 100;
 
   let tpPrice, slPrice;
+  let tpNetto, slNetto;
 
   if (selectedTrade === "long") {
     tpPrice = entry * (1 + tpMove);
@@ -215,13 +228,25 @@ function calculate() {
     slPrice = entry * (1 - slMove);
   }
 
+  // Fee per sisi (buy 0.04% dan sell 0.04%), total roundtrip 0.08%
+  const feeRate = 0.0008; // 0.08% total roundtrip fee
+  
+  // Jika checkbox "Nett" dicentang, hitung harga TP/SL netto
+  if (includeFee) {
+    tpNetto = tpPrice / (1 - feeRate);  // Mencari harga yang sudah mempertimbangkan fee
+    slNetto = slPrice / (1 + feeRate);  // Mencari harga SL dengan fee
+  } else {
+    tpNetto = tpPrice;  // Tanpa fee
+    slNetto = slPrice;  // Tanpa fee
+  }
+
   document.getElementById("result").innerHTML = `
     <div class="result-box">
-      <p>Harga Take Profit (TP)</p>
-      <div class="value" onclick="copyToClipboard('${tpPrice.toFixed(6)}')">${tpPrice.toFixed(6)}</div>
+      <p>Harga Take Profit (TP) ${includeFee ? 'Setelah Fee' : 'Ideal'}</p>
+      <div class="value" onclick="copyToClipboard('${tpNetto.toFixed(6)}')">${tpNetto.toFixed(6)}</div>
 
-      <p>Harga Stop Loss (SL)</p>
-      <div class="value" onclick="copyToClipboard('${slPrice.toFixed(6)}')">${slPrice.toFixed(6)}</div>
+      <p>Harga Stop Loss (SL) ${includeFee ? 'Setelah Fee' : 'Ideal'}</p>
+      <div class="value" onclick="copyToClipboard('${slNetto.toFixed(6)}')">${slNetto.toFixed(6)}</div>
     </div>
   `;
 }
