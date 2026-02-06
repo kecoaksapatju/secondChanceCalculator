@@ -35,6 +35,7 @@ h2 {
   margin-right: auto;
 }
 
+/* ===== FORM ===== */
 label {
   display: block;
   font-size: 14px;
@@ -63,6 +64,22 @@ button {
   cursor: pointer;
 }
 
+.result {
+  margin-top: 12px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* ===== Deskripsi ===== */
+.description {
+  font-size: 12px;
+  font-style: italic;
+  color: #a1a1a1;
+  margin-top: -8px;
+  text-align: center;
+}
+
+/* ===== Hasil ===== */
 .result-box {
   background-color: #020617;
   padding: 12px;
@@ -86,6 +103,7 @@ button {
   border: 1px solid #ccc;
 }
 
+/* ===== BUY SELL ===== */
 .trade-selector {
   display: flex;
   justify-content: space-between;
@@ -104,29 +122,37 @@ button {
 
 .buy {
   background-color: #22c55e;
+  color: #022c22;
 }
 
 .sell {
   background-color: #ef4444;
+  color: #022c22;
 }
 
 .selected {
   outline: 3px solid #e5e7eb;
 }
 
+/* ===== CHECKBOX FIX (ISOLATED) ===== */
 .checkbox-container {
   margin-top: 12px;
   display: flex;
   justify-content: center;
+}
+
+.checkbox-label {
+  display: inline-flex;
   align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  line-height: 1.4;
+  max-width: 100%;
 }
 
-.checkbox-container input {
-  margin-right: 8px;
-}
-
-.checkbox-container label {
-  white-space: nowrap; /* Prevent wrapping */
+.checkbox-label span {
+  white-space: normal;
+  text-align: left;
 }
 </style>
 </head>
@@ -135,10 +161,14 @@ button {
 
 <h2>TP & SL Calculator</h2>
 
+<div class="description">
+  <p>Tentukan BUY/SELL, masukkan harga entry, target profit, target loss, dan leverage.</p>
+</div>
+
 <div class="card">
   <div class="trade-selector">
-    <div class="trade-box buy" onclick="selectTrade('long')">BUY / LONG</div>
-    <div class="trade-box sell" onclick="selectTrade('short')">SELL / SHORT</div>
+    <div class="trade-box buy" onclick="selectTrade('long')">BUY/LONG</div>
+    <div class="trade-box sell" onclick="selectTrade('short')">SELL/SHORT</div>
   </div>
 
   <label>Harga Entry</label>
@@ -154,14 +184,16 @@ button {
   <input id="leverage" type="number" value="200">
 
   <div class="checkbox-container">
-    <input type="checkbox" id="includeFee" checked>
-    <label for="includeFee">Nett (include fee 0.08%)</label>
+    <label class="checkbox-label">
+      <input type="checkbox" id="includeFee" checked>
+      <span>Nett (include fee 0.08%)</span>
+    </label>
   </div>
 
   <button onclick="calculate()">Hitung</button>
 </div>
 
-<div id="result"></div>
+<div id="result" class="result"></div>
 
 <script>
 let selectedTrade = null;
@@ -194,22 +226,20 @@ function calculate() {
   if (selectedTrade === "long") {
     tpIdeal = entry * (1 + tpMove);
     slIdeal = entry * (1 + slMove);
-
     tpFinal = nett ? tpIdeal / (1 - fee) : tpIdeal;
     slFinal = nett ? slIdeal / (1 + fee) : slIdeal;
   } else {
     tpIdeal = entry * (1 - tpMove);
     slIdeal = entry * (1 - slMove);
-
     tpFinal = nett ? tpIdeal * (1 - fee) : tpIdeal;
     slFinal = nett ? slIdeal * (1 + fee) : slIdeal;
   }
 
   result.innerHTML = `
     <div class="result-box">
-      <p>Take Profit</p>
+      <p>Harga Take Profit (TP)</p>
       <div class="value" onclick="copyToClipboard('${tpFinal.toFixed(6)}')">${tpFinal.toFixed(6)}</div>
-      <p>Stop Loss</p>
+      <p>Harga Stop Loss (SL)</p>
       <div class="value" onclick="copyToClipboard('${slFinal.toFixed(6)}')">${slFinal.toFixed(6)}</div>
     </div>
   `;
@@ -217,9 +247,7 @@ function calculate() {
 
 function copyToClipboard(value) {
   navigator.clipboard.writeText(value).then(() => {
-    alert(`Harga ${value} sudah tercopy ke clipboard!`);
-  }).catch((err) => {
-    alert("Gagal menyalin ke clipboard: " + err);
+    alert(\`Harga \${value} sudah tercopy ke clipboard!\`);
   });
 }
 </script>
