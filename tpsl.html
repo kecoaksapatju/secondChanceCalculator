@@ -103,6 +103,37 @@ button {
   background-color: #fff; /* White background for value box */
   border: 1px solid #ccc; /* Light border for the value box */
 }
+
+/* ===== Kotak BUY dan SELL ===== */
+.trade-selector {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.trade-box {
+  width: 48%;
+  padding: 14px;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 8px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.buy {
+  background-color: #22c55e; /* Green */
+  color: #022c22;
+}
+
+.sell {
+  background-color: #ef4444; /* Red */
+  color: #022c22;
+}
+
+.selected {
+  outline: 3px solid #e5e7eb; /* Highlighted border */
+}
 </style>
 </head>
 
@@ -115,6 +146,11 @@ button {
 </div>
 
 <div class="card">
+  <div class="trade-selector">
+    <div class="trade-box buy" onclick="selectTrade('long')">BUY/LONG</div>
+    <div class="trade-box sell" onclick="selectTrade('short')">SELL/SHORT</div>
+  </div>
+
   <label>Harga Entry</label>
   <input id="entryPrice" type="number" placeholder="Contoh: 0.745709">
 
@@ -133,6 +169,23 @@ button {
 <div id="result" class="result"></div>
 
 <script>
+let selectedTrade = null; // Variabel untuk menyimpan tipe trade yang dipilih
+
+function selectTrade(type) {
+  selectedTrade = type; // Menyimpan pilihan trade yang dipilih
+  
+  // Menghapus outline dari kedua kotak
+  document.querySelector('.buy').classList.remove('selected');
+  document.querySelector('.sell').classList.remove('selected');
+  
+  // Menambahkan outline ke kotak yang dipilih
+  if (type === 'long') {
+    document.querySelector('.buy').classList.add('selected');
+  } else if (type === 'short') {
+    document.querySelector('.sell').classList.add('selected');
+  }
+}
+
 function calculate() {
   const entry = Number(document.getElementById("entryPrice").value);
   const tpPct = Number(document.getElementById("targetProfit").value);
@@ -143,22 +196,40 @@ function calculate() {
     alert("Harga entry belum diisi");
     return;
   }
+  
+  if (!selectedTrade) {
+    alert("Pilih terlebih dahulu jenis trade (BUY/LONG atau SELL/SHORT)");
+    return;
+  }
 
   const tpMove = tpPct / lev / 100;
   const slMove = slPct / lev / 100;
 
-  const tpPrice = entry * (1 + tpMove);
-  const slPrice = entry * (1 + slMove);
+  let tpPrice, slPrice;
+
+  if (selectedTrade === "long") {
+    tpPrice = entry * (1 + tpMove);
+    slPrice = entry * (1 + slMove);
+  } else if (selectedTrade === "short") {
+    tpPrice = entry * (1 - tpMove);
+    slPrice = entry * (1 - slMove);
+  }
 
   document.getElementById("result").innerHTML = `
     <div class="result-box">
       <p>Harga Take Profit (TP)</p>
-      <div class="value">${tpPrice.toFixed(6)}</div>
+      <div class="value" onclick="copyToClipboard('${tpPrice.toFixed(6)}')">${tpPrice.toFixed(6)}</div>
 
       <p>Harga Stop Loss (SL)</p>
-      <div class="value">${slPrice.toFixed(6)}</div>
+      <div class="value" onclick="copyToClipboard('${slPrice.toFixed(6)}')">${slPrice.toFixed(6)}</div>
     </div>
   `;
+}
+
+function copyToClipboard(value) {
+  navigator.clipboard.writeText(value).then(() => {
+    alert(`Harga ${value} sudah tercopy ke clipboard!`);
+  });
 }
 </script>
 
