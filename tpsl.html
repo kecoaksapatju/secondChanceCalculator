@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
+/* ===== CSS ASLI ===== */
 *,
 *::before,
 *::after {
@@ -18,6 +19,7 @@ body {
   color: #e5e7eb;
   padding: 16px;
   margin: 0;
+  overflow-x: hidden;
 }
 
 h2 {
@@ -35,7 +37,6 @@ h2 {
   margin-right: auto;
 }
 
-/* ===== FORM ===== */
 label {
   display: block;
   font-size: 14px;
@@ -51,7 +52,7 @@ input {
   border: none;
 }
 
-button {
+button.calc-btn {
   margin-top: 16px;
   width: 100%;
   padding: 14px;
@@ -64,7 +65,6 @@ button {
   cursor: pointer;
 }
 
-/* ===== DESKRIPSI (ASLI) ===== */
 .description {
   font-size: 12px;
   font-style: italic;
@@ -73,7 +73,6 @@ button {
   text-align: center;
 }
 
-/* ===== BUY / SELL ===== */
 .trade-selector {
   display: flex;
   justify-content: space-between;
@@ -90,21 +89,10 @@ button {
   cursor: pointer;
 }
 
-.buy {
-  background-color: #22c55e;
-  color: #022c22;
-}
+.buy { background-color: #22c55e; color: #022c22; }
+.sell { background-color: #ef4444; color: #022c22; }
+.selected { outline: 3px solid #e5e7eb; }
 
-.sell {
-  background-color: #ef4444;
-  color: #022c22;
-}
-
-.selected {
-  outline: 3px solid #e5e7eb;
-}
-
-/* ===== CHECKBOX ===== */
 .checkbox-container {
   margin-top: 12px;
   display: flex;
@@ -116,27 +104,19 @@ button {
   align-items: center;
   gap: 6px;
   font-size: 14px;
-  line-height: 1.4;
 }
 
-.checkbox-label input {
-  width: auto;
-  margin: 0;
-}
+.checkbox-label input { width: auto; margin: 0; }
 
-/* ===== RESULT ===== */
 .result-box {
   background-color: #020617;
   padding: 12px;
   border-radius: 8px;
   text-align: center;
   margin-top: 8px;
-}
-
-.result-box p {
-  font-size: 16px;
-  font-weight: bold;
-  margin-bottom: 4px;
+  max-width: 520px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .result-box .value {
@@ -147,18 +127,97 @@ button {
   background-color: #fff;
   border: 1px solid #ccc;
   cursor: pointer;
+  margin-bottom: 10px;
 }
+
+/* ===== UI MENU NAVIGASI ===== */
+.menu-toggle {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  width: 40px;
+  height: 40px;
+  background: #1e293b;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  z-index: 1000;
+  border: 1px solid #334155;
+}
+
+.menu-toggle span {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: #e5e7eb;
+  transition: 0.3s;
+}
+
+.side-nav {
+  position: fixed;
+  top: 0;
+  right: -250px;
+  width: 250px;
+  height: 100%;
+  background: #020617;
+  z-index: 999;
+  padding-top: 80px;
+  transition: 0.3s;
+  border-left: 1px solid #1e293b;
+}
+
+.side-nav.active { right: 0; }
+
+.side-nav a {
+  display: block;
+  padding: 16px 24px;
+  text-decoration: none;
+  color: #e5e7eb;
+  font-size: 16px;
+  border-bottom: 1px solid #1e293b;
+}
+
+.side-nav a.active-link { color: #22c55e; font-weight: bold; }
+
+.menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  z-index: 998;
+  display: none;
+}
+
+.menu-overlay.active { display: block; }
+
+.menu-toggle.active span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+.menu-toggle.active span:nth-child(2) { opacity: 0; }
+.menu-toggle.active span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
 </style>
 </head>
 
 <body>
 
+<div class="menu-overlay" onclick="toggleMenu()"></div>
+<div class="menu-toggle" onclick="toggleMenu()">
+  <span></span><span></span><span></span>
+</div>
+
+<nav class="side-nav">
+  <a href="tpsl.html" class="active-link">TP/SL Calculator</a>
+  <a href="tradeSimulation.html">Trade Simulation</a>
+</nav>
+
 <h2>TP & SL Calculator</h2>
 
 <div class="description">
-  <p>
-    Tentukan BUY/SELL, masukkan harga entry, target profit, target loss, dan leverage untuk menghitung harga Take Profit (TP) dan Stop Loss (SL).
-  </p>
+  <p>Tentukan posisi, masukkan harga entry, dan parameter lainnya.</p>
 </div>
 
 <div class="card">
@@ -186,12 +245,20 @@ button {
     </label>
   </div>
 
-  <button onclick="calculate()">Hitung</button>
+  <button class="calc-btn" onclick="calculate()">Hitung</button>
 </div>
 
 <div id="result"></div>
 
 <script>
+/* ===== UI LOGIC ===== */
+function toggleMenu() {
+  document.querySelector('.side-nav').classList.toggle('active');
+  document.querySelector('.menu-toggle').classList.toggle('active');
+  document.querySelector('.menu-overlay').classList.toggle('active');
+}
+
+/* ===== LOGIC ASLI ===== */
 let selectedTrade = null;
 const fee = 0.0008;
 
@@ -231,7 +298,7 @@ function calculate() {
     slFinal = nett ? slIdeal * (1 + fee) : slIdeal;
   }
 
-  result.innerHTML = `
+  document.getElementById("result").innerHTML = `
     <div class="result-box">
       <p>Harga Take Profit (TP)</p>
       <div class="value" onclick="copyToClipboard('${tpFinal.toFixed(6)}')">${tpFinal.toFixed(6)}</div>
@@ -241,16 +308,14 @@ function calculate() {
   `;
 }
 
-/* ===== COPY (iOS SAFE) ===== */
 function copyToClipboard(value) {
   const tempInput = document.createElement("input");
   tempInput.value = value;
   document.body.appendChild(tempInput);
   tempInput.select();
-  tempInput.setSelectionRange(0, 99999);
   document.execCommand("copy");
   document.body.removeChild(tempInput);
-  alert(`Harga ${value} sudah tercopy ke clipboard!`);
+  alert(`Harga ${value} tercopy!`);
 }
 </script>
 
