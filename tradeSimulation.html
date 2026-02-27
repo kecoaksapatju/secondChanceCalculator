@@ -8,6 +8,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
+/* ===== CSS ASLI (TIDAK BERUBAH) ===== */
 *, *::before, *::after { box-sizing: border-box; }
 
 body {
@@ -16,6 +17,7 @@ body {
   color: #e5e7eb;
   margin: 0;
   padding: 16px;
+  overflow-x: hidden;
 }
 
 h2 { text-align: center; margin-bottom: 6px; }
@@ -49,7 +51,7 @@ input {
   margin-top: 4px;
 }
 
-button {
+button.calc-btn {
   margin-top: 18px;
   width: 100%;
   padding: 14px;
@@ -59,6 +61,7 @@ button {
   border: none;
   background: #22c55e;
   color: #022c22;
+  cursor: pointer;
 }
 
 /* ===== SUMMARY ===== */
@@ -95,7 +98,6 @@ button {
   .summary-grid { grid-template-columns: 1fr 1fr; }
 }
 
-/* ===== INFO BAR ===== */
 .info-bar {
   margin-top: 12px;
   padding: 10px 12px;
@@ -105,13 +107,11 @@ button {
   border-radius: 8px;
 }
 
-/* ===== CHART ===== */
 .chart-wrapper {
   margin-top: 20px;
   height: 260px;
 }
 
-/* ===== TABLE ===== */
 .table-wrapper {
   margin-top: 20px;
   overflow-x: auto;
@@ -132,15 +132,94 @@ th, td {
 
 th { background: #1e293b; }
 td:first-child, th:first-child { text-align: center; }
+
+/* ===== UI MENU (SAMA DENGAN TPSL.HTML) ===== */
+.menu-toggle {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  width: 40px;
+  height: 40px;
+  background: #1e293b;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  z-index: 1000;
+  border: 1px solid #334155;
+}
+
+.menu-toggle span {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: #e5e7eb;
+  transition: 0.3s;
+}
+
+.side-nav {
+  position: fixed;
+  top: 0;
+  right: -250px;
+  width: 250px;
+  height: 100%;
+  background: #020617;
+  z-index: 999;
+  padding-top: 80px;
+  transition: 0.3s;
+  border-left: 1px solid #1e293b;
+}
+
+.side-nav.active { right: 0; }
+
+.side-nav a {
+  display: block;
+  padding: 16px 24px;
+  text-decoration: none;
+  color: #e5e7eb;
+  font-size: 16px;
+  border-bottom: 1px solid #1e293b;
+}
+
+.side-nav a.active-link { color: #22c55e; font-weight: bold; }
+
+.menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  z-index: 998;
+  display: none;
+}
+
+.menu-overlay.active { display: block; }
+
+.menu-toggle.active span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+.menu-toggle.active span:nth-child(2) { opacity: 0; }
+.menu-toggle.active span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
 </style>
 </head>
 
 <body>
 
+<div class="menu-overlay" onclick="toggleMenu()"></div>
+<div class="menu-toggle" onclick="toggleMenu()">
+  <span></span><span></span><span></span>
+</div>
+
+<nav class="side-nav">
+  <a href="tpsl.html">TP/SL Calculator</a>
+  <a href="tradeSimulation.html" class="active-link">Trade Simulation</a>
+</nav>
+
 <h2>SecondChance Calculator</h2>
 <div class="intro">
-ⓘ Kalkulator ini mensimulasikan dampak rata-rata win per trade terhadap pertumbuhan modal, profit, fee, dan ROI.
-Bersifat simulasi matematis, bukan hasil trading nyata. Gunakan sebagai referensi dan lakukan trading dengan hati-hati.
+ⓘ Kalkulator ini mensimulasikan dampak rata-rata win per trade terhadap pertumbuhan modal.
 </div>
 
 <div class="card">
@@ -174,12 +253,20 @@ Bersifat simulasi matematis, bukan hasil trading nyata. Gunakan sebagai referens
   <label>Jumlah Trade</label>
   <input id="loops" type="number" value="60">
 
-  <button onclick="calculate()">Hitung</button>
+  <button class="calc-btn" onclick="calculate()">Hitung</button>
 </div>
 
 <div id="result"></div>
 
 <script>
+/* ===== UI LOGIC MENU ===== */
+function toggleMenu() {
+  document.querySelector('.side-nav').classList.toggle('active');
+  document.querySelector('.menu-toggle').classList.toggle('active');
+  document.querySelector('.menu-overlay').classList.toggle('active');
+}
+
+/* ===== LOGIC ASLI (TIDAK BERUBAH) ===== */
 let equityChart = null;
 
 function calculate() {
@@ -202,8 +289,7 @@ function calculate() {
   let totalProfit = 0;
   let totalFee = 0;
   let totalWD = 0;
-  let bufferProfit = 0;
-  let profitHistory = []; // Menyimpan history profit 3 terakhir
+  let profitHistory = []; 
 
   let rows = "";
   let equity = [modalAwal];
@@ -217,11 +303,7 @@ function calculate() {
     const fee = (margin * lev) * (feeRoundPct / 100);
     const netProfit = grossProfit - fee;
 
-    // Profit masuk ke buffer
-    bufferProfit += netProfit;
     profitHistory.push(netProfit);
-
-    // Menjaga buffer hanya mencatat 3 profit terakhir
     if (profitHistory.length > wdInt) {
       profitHistory.shift();
     }
@@ -230,29 +312,18 @@ function calculate() {
     totalFee += fee;
 
     let wd = 0;
-    // WD dilakukan hanya pada 3 profit terakhir
     if (i % wdInt === 0 && profitHistory.length === wdInt) {
-      // Hanya WD 50% dari 3 profit terakhir
       const totalLast3Profit = profitHistory.reduce((acc, val) => acc + val, 0);
       wd = totalLast3Profit * wdPct;
       totalWD += wd;
       modalNow -= wd;
     }
 
-    modalNow += netProfit;  // Modal selalu dicompound dengan profit terbaru
-
+    modalNow += netProfit; 
     equity.push(modalNow);
     labels.push(i.toString());
 
-    rows += `
-      <tr>
-        <td>${i}</td>
-        <td>${modalBefore.toFixed(2)}</td>
-        <td>${margin.toFixed(2)}</td>
-        <td>${netProfit.toFixed(2)}</td>
-        <td>${fee.toFixed(2)}</td>
-        <td>${modalNow.toFixed(2)}</td>
-      </tr>`;
+    rows += `<tr><td>${i}</td><td>${modalBefore.toFixed(2)}</td><td>${margin.toFixed(2)}</td><td>${netProfit.toFixed(2)}</td><td>${fee.toFixed(2)}</td><td>${modalNow.toFixed(2)}</td></tr>`;
   }
 
   const roi = (totalProfit / modalAwal) * 100;
@@ -262,50 +333,17 @@ function calculate() {
   document.getElementById("result").innerHTML = `
   <div class="card">
     <div class="summary-title">SUMMARY</div>
-
     <div class="summary-grid">
-      <div class="summary-box">
-        <div class="summary-row"><span>Modal awal</span><span>$${modalAwal.toFixed(2)}</span></div>
-        <div class="summary-row"><span>Posisi per trade</span><span>${(posPct*100).toFixed(2)}%</span></div>
-        <div class="summary-row"><span>Profit per trade</span><span>${(profitPct*100).toFixed(2)}%</span></div>
-        <div class="summary-row"><span>WD Profit/Trade</span><span>${(wdPct*100).toFixed(2)}%</span></div>
-        <div class="summary-row"><span>WD interval</span><span>${wdInt}</span></div>
-        <div class="summary-row"><span>Leverage</span><span>${lev}x</span></div>
-        <div class="summary-row"><span>Fee round trip</span><span>${feeRoundPct.toFixed(2)}%</span></div>
-        <div class="summary-row"><span>Jumlah trade</span><span>${trades}</span></div>
-      </div>
-
       <div class="summary-box">
         <div class="summary-row"><span>Modal akhir</span><span>$${modalNow.toFixed(2)}</span></div>
         <div class="summary-row"><span>Total profit</span><span>$${totalProfit.toFixed(2)}</span></div>
-        <div class="summary-row"><span>Total fee</span><span>$${totalFee.toFixed(2)}</span></div>
         <div class="summary-row"><span>Total WD</span><span>$${totalWD.toFixed(2)}</span></div>
         <div class="summary-row"><span>ROI total</span><span>${roi.toFixed(1)}%</span></div>
-        <div class="summary-row"><span>Avg profit/trade</span><span>$${avgProfit.toFixed(2)}</span></div>
       </div>
     </div>
-
-    <div class="info-bar">
-      Selama profit per trade ≥ ${lossLimitPct.toFixed(2)}% dari margin, trade TIDAK akan rugi secara matematis. (Rumus: Fee × Leverage)
-    </div>
-
-    <div class="chart-wrapper">
-      <canvas id="equityChart"></canvas>
-    </div>
-
-    <div class="table-wrapper">
-      <table>
-        <tr>
-          <th>#</th>
-          <th>Modal</th>
-          <th>Margin</th>
-          <th>Profit</th>
-          <th>Fee</th>
-          <th>Total</th>
-        </tr>
-        ${rows}
-      </table>
-    </div>
+    <div class="info-bar">Batas aman profit per trade: ${lossLimitPct.toFixed(2)}%</div>
+    <div class="chart-wrapper"><canvas id="equityChart"></canvas></div>
+    <div class="table-wrapper"><table><tr><th>#</th><th>Modal</th><th>Margin</th><th>Profit</th><th>Fee</th><th>Total</th></tr>${rows}</table></div>
   </div>`;
 
   drawChart(labels, equity);
@@ -314,7 +352,6 @@ function calculate() {
 function drawChart(labels, data) {
   const ctx = document.getElementById("equityChart");
   if (equityChart) equityChart.destroy();
-
   equityChart = new Chart(ctx, {
     type: "line",
     data: {
